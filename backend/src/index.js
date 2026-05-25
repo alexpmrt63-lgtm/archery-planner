@@ -17,9 +17,10 @@ const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
   .map(o => o.trim());
 app.use(cors({
   origin: (origin, cb) => {
-    // Autoriser les requêtes sans origin (Postman, Railway health checks…)
+    // Autoriser les requêtes sans origin (Postman, Render health checks…)
     if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
-    cb(new Error(`CORS bloqué : ${origin}`));
+    // Retourner false (403) au lieu de lever une erreur (500)
+    return cb(null, false);
   },
   credentials: true,
 }));
