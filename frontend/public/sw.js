@@ -1,5 +1,10 @@
 // Service Worker — Archery Planner Push Notifications
 
+// Évite l'avertissement Chrome "Promised response went out of scope"
+self.addEventListener('message', event => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
+});
+
 self.addEventListener('push', event => {
   const data = event.data?.json() ?? {};
   const title = data.title || 'Archery Planner';
