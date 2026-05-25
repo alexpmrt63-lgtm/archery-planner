@@ -1,0 +1,29 @@
+# Dépendances
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+
+# Build frontend
+frontend/dist/
+
+# Variables d'environnement (ne jamais committer)
+.env
+.env.local
+.env.production
+frontend/.env*
+backend/.env*
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Éditeurs
+.vscode/
+.idea/
+
+# Fichiers sensibles locaux
+identifiants_archers.txt

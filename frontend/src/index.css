@@ -1,0 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
+}
+
+@layer components {
+  .slot-cours {
+    @apply bg-gray-200 border border-gray-300 text-gray-600 text-xs rounded px-1 py-0.5 overflow-hidden select-none;
+  }
+  .slot-training {
+    @apply text-white text-xs rounded px-1 py-0.5 overflow-hidden cursor-grab active:cursor-grabbing select-none shadow-sm;
+  }
+  .time-grid-cell {
+    @apply border-b border-r border-gray-100 relative;
+  }
+}
