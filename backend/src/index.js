@@ -6,8 +6,9 @@ import archersRoutes from './routes/archers.js';
 import scheduleRoutes from './routes/schedule.js';
 import planningRoutes from './routes/planning.js';
 import trainingTypesRoutes from './routes/trainingTypes.js';
-import statsRoutes from './routes/stats.js';
-import pushRoutes  from './routes/push.js';
+import statsRoutes    from './routes/stats.js';
+import pushRoutes     from './routes/push.js';
+import commentsRoutes from './routes/comments.js';
 
 const app = express();
 
@@ -32,7 +33,8 @@ app.use('/api/schedule', scheduleRoutes);
 app.use('/api/planning', planningRoutes);
 app.use('/api/training-types', trainingTypesRoutes);
 app.use('/api/stats', statsRoutes);
-app.use('/api/push',  pushRoutes);
+app.use('/api/push',     pushRoutes);
+app.use('/api/comments', commentsRoutes);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 

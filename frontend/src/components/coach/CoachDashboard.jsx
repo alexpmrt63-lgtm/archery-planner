@@ -108,7 +108,7 @@ export default function CoachDashboard() {
   useEffect(() => {
     setArcherComment(null);
     if (!selectedArcher) return;
-    api.get(`/schedule/comment/${selectedArcher.id}/${weekStart}`)
+    api.get(`/comments/${selectedArcher.id}/${weekStart}`)
       .then(r => setArcherComment(r.data.comment || null))
       .catch(() => setArcherComment(null));
   }, [selectedArcher, weekStart]);
