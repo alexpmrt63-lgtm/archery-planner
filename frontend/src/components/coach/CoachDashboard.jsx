@@ -8,6 +8,7 @@ import TrainingTypesPanel from './TrainingTypesPanel.jsx';
 import AddTrainingModal from './AddTrainingModal.jsx';
 import EditTrainingModal from './EditTrainingModal.jsx';
 import ArcherStats from './ArcherStats.jsx';
+import ArcherMessages from './ArcherMessages.jsx';
 import WelcomeScreen from '../shared/WelcomeScreen.jsx';
 import { usePushSubscription } from '../../hooks/usePushSubscription.js';
 
@@ -360,6 +361,7 @@ export default function CoachDashboard() {
                   {[
                     { id: 'planning',  label: 'Planning',      icon: '📅' },
                     { id: 'stats',     label: 'Statistiques',  icon: '📊' },
+                    { id: 'messages',  label: 'Messages',       icon: '💬' },
                   ].map(tab => (
                     <button
                       key={tab.id}
@@ -377,7 +379,7 @@ export default function CoachDashboard() {
                 </div>
 
                 {/* Contenu de l'onglet actif */}
-                {activeTab === 'planning' ? (
+                {activeTab === 'planning' && (
                   <div className="flex-1 flex overflow-hidden">
                     <div className="flex-1 overflow-y-auto p-6">
                       {/* Commentaire de l'archer pour cette semaine */}
@@ -414,9 +416,15 @@ export default function CoachDashboard() {
                       />
                     </div>
                   </div>
-                ) : (
+                )}
+                {activeTab === 'stats' && (
                   <div className="flex-1 overflow-y-auto bg-gray-50">
                     <ArcherStats archer={selectedArcher} weekStart={weekStart} />
+                  </div>
+                )}
+                {activeTab === 'messages' && (
+                  <div className="flex-1 overflow-hidden">
+                    <ArcherMessages archer={selectedArcher} />
                   </div>
                 )}
               </div>

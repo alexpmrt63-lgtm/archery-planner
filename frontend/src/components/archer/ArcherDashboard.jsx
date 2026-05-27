@@ -6,6 +6,7 @@ import { useAuthContext } from '../../context/AuthContext.jsx';
 import WeeklyPlanner from '../shared/WeeklyPlanner.jsx';
 import WeekPicker from '../shared/WeekPicker.jsx';
 import WelcomeScreen from '../shared/WelcomeScreen.jsx';
+import ArcherMessages from '../coach/ArcherMessages.jsx';
 import { usePushSubscription } from '../../hooks/usePushSubscription.js';
 
 const REFRESH_INTERVAL = 30_000;
@@ -153,6 +154,7 @@ export default function ArcherDashboard() {
           { id: 'accueil',  label: 'Accueil',                 icon: '🏠' },
           { id: 'planning', label: 'Mon planning',             icon: '📅' },
           { id: 'upload',   label: 'Emploi du temps scolaire', icon: '📷' },
+          { id: 'messages', label: 'Messages',                 icon: '💬' },
         ].map(t => (
           <button
             key={t.id}
@@ -173,11 +175,15 @@ export default function ArcherDashboard() {
       </div>
 
       {/* Contenu */}
-      <main className="flex-1 overflow-y-auto">
-        {tab === 'accueil' && <WelcomeScreen userName={user?.name} role="archer" />}
+      <main className="flex-1 flex flex-col overflow-hidden">
+        {tab === 'accueil' && (
+          <div className="flex-1 overflow-y-auto">
+            <WelcomeScreen userName={user?.name} role="archer" />
+          </div>
+        )}
 
         {tab === 'planning' && (
-          <div className="p-6">
+          <div className="flex-1 overflow-y-auto p-6">
             {loading && (
               <div className="flex items-center justify-center gap-3 mb-4 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
                 <svg className="animate-spin w-4 h-4 text-blue-600 shrink-0" viewBox="0 0 24 24" fill="none">
@@ -203,8 +209,14 @@ export default function ArcherDashboard() {
           </div>
         )}
 
+        {tab === 'messages' && (
+          <div className="flex-1 overflow-hidden">
+            <ArcherMessages archer={user} />
+          </div>
+        )}
+
         {tab === 'upload' && (
-          <div className="p-6">
+          <div className="flex-1 overflow-y-auto p-6">
             <div className="max-w-lg mx-auto space-y-4">
 
               {/* Sélecteur de semaine */}
