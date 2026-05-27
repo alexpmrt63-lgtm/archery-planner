@@ -1,5 +1,9 @@
 // Service Worker — Archery Planner Push Notifications
 
+// Installation PWA — activation immédiate
+self.addEventListener('install',  () => self.skipWaiting());
+self.addEventListener('activate', event => event.waitUntil(clients.claim()));
+
 // Évite l'avertissement Chrome "Promised response went out of scope"
 self.addEventListener('message', event => {
   if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();

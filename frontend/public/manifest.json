@@ -1,0 +1,30 @@
+{
+  "name": "Jil2.0",
+  "short_name": "Jil2.0",
+  "description": "Pôle France Relève — Planificateur Tir à l'arc Nancy",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1a56a0",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/pole-logo.jpeg",
+      "sizes": "any",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/pole-logo.jpeg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/pole-logo.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
