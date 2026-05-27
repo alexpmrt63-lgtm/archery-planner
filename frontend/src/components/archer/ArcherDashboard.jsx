@@ -24,6 +24,7 @@ export default function ArcherDashboard() {
   const [uploading, setUploading]               = useState(false);
   const [uploadMsg, setUploadMsg]               = useState('');
   const [uploadedSlots, setUploadedSlots]       = useState([]);
+  const [comment, setComment]                   = useState('');
   const [tab, setTab]                           = useState('accueil');
   const [loading, setLoading]                   = useState(false);
   const [lastRefresh, setLastRefresh]           = useState(null);
@@ -73,6 +74,7 @@ export default function ArcherDashboard() {
   useEffect(() => {
     setUploadMsg('');
     setUploadedSlots([]);
+    setComment('');
   }, [uploadWeekStart]);
 
   async function handleUpload(e) {
@@ -86,6 +88,7 @@ export default function ArcherDashboard() {
       form.append('image', file);
       form.append('week_start', uploadWeekStart);
       form.append('archer_id', user.id); // fallback explicite au cas où le JWT manque
+      if (comment.trim()) form.append('comment', comment.trim());
       // Ne pas forcer le Content-Type : le navigateur ajoute automatiquement le boundary
       const res = await api.post('/schedule/upload', form);
       setUploadedSlots(res.data.slots || []);
@@ -237,6 +240,21 @@ export default function ArcherDashboard() {
                 <div className="flex items-center justify-center">
                   <WeekPicker weekStart={uploadWeekStart} onChange={setUploadWeekStart} />
                 </div>
+              </div>
+
+              {/* Commentaire / avis de l'archer */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                  Commentaire pour le coach <span className="font-normal text-gray-400">(optionnel)</span>
+                </label>
+                <textarea
+                  value={comment}
+                  onChange={e => setComment(e.target.value)}
+                  disabled={uploading}
+                  rows={3}
+                  placeholder="Ex : j'ai cours supplémentaire mercredi, semaine chargée…"
+                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent disabled:opacity-50 transition"
+                />
               </div>
 
               {/* Zone de dépôt */}

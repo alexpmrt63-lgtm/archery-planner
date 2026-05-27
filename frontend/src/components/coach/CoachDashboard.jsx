@@ -26,6 +26,7 @@ export default function CoachDashboard() {
   const [libDrag, setLibDrag]               = useState(null); // bloc bibliothèque en cours de drag
   const [sidebarOpen, setSidebarOpen]       = useState(true);
   const [loading, setLoading]               = useState(false);
+  const [archerComment, setArcherComment]   = useState(null); // commentaire archer pour la semaine affichée
 
   // Cache { key: { cours, training, ts } } — données valides 15 secondes
   const CACHE_TTL = 15_000;
@@ -102,6 +103,15 @@ export default function CoachDashboard() {
       prefetchAdjacentWeeks(selectedArcher, weekStart);
     });
   }, [selectedArcher, weekStart, loadWeekData, prefetchAdjacentWeeks]);
+
+  // Charge le commentaire de l'archer pour la semaine affichée
+  useEffect(() => {
+    setArcherComment(null);
+    if (!selectedArcher) return;
+    api.get(`/schedule/comment/${selectedArcher.id}/${weekStart}`)
+      .then(r => setArcherComment(r.data.comment || null))
+      .catch(() => setArcherComment(null));
+  }, [selectedArcher, weekStart]);
 
   // Refs stables pour les timers
   const selectedArcherRef = useRef(selectedArcher);
@@ -370,6 +380,18 @@ export default function CoachDashboard() {
                 {activeTab === 'planning' ? (
                   <div className="flex-1 flex overflow-hidden">
                     <div className="flex-1 overflow-y-auto p-6">
+                      {/* Commentaire de l'archer pour cette semaine */}
+                      {archerComment && (
+                        <div className="mb-4 flex gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                          <span className="text-lg shrink-0">💬</span>
+                          <div>
+                            <p className="text-xs font-semibold text-amber-700 mb-0.5">
+                              Message de {selectedArcher.name}
+                            </p>
+                            <p className="text-sm text-amber-800">{archerComment}</p>
+                          </div>
+                        </div>
+                      )}
                       <WeeklyPlanner
                         weekStart={weekStart}
                         coursSlots={coursSlots}

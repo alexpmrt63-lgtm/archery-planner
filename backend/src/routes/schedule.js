@@ -24,6 +24,7 @@ router.post('/upload', requireAuth, upload.single('image'), async (req, res) => 
   }
 
   const weekStart = req.body.week_start; // format YYYY-MM-DD (lundi de la semaine)
+  const comment   = (req.body.comment || '').trim();
 
   if (!archerId) return res.status(400).json({ error: 'archer_id introuvable — reconnectez-vous' });
   if (!weekStart) return res.status(400).json({ error: 'week_start manquant' });
@@ -118,6 +119,14 @@ Heures au format HH:MM. Si tu ne vois pas d'emploi du temps clair, renvoie {"slo
     ? req.user.name
     : (await supabase.from('users').select('name').eq('id', archerId).single()).data?.name ?? 'Un archer';
 
+  // Sauvegarde le commentaire de l'archer (upsert : 1 commentaire par archer/semaine)
+  if (comment) {
+    await supabase.from('archer_comments').upsert(
+      { archer_id: archerId, week_start: weekStart, comment },
+      { onConflict: 'archer_id,week_start' }
+    );
+  }
+
   // Notifie tous les coachs (fire-and-forget — n'impacte pas la réponse)
   sendPushToAllCoaches({
     title: '📅 Emploi du temps mis à jour',
@@ -126,7 +135,22 @@ Heures au format HH:MM. Si tu ne vois pas d'emploi du temps clair, renvoie {"slo
     url:   '/',
   }).catch(() => {});
 
-  res.json({ slots, image_path: filePath });
+  res.json({ slots, image_path: filePath, comment: comment || null });
+});
+
+// Récupère le commentaire d'un archer pour une semaine (coach + archer)
+router.get('/comment/:archerId/:weekStart', requireAuth, async (req, res) => {
+  const { archerId, weekStart } = req.params;
+  if (req.user.role === 'archer' && req.user.id !== archerId) {
+    return res.status(403).json({ error: 'Accès refusé' });
+  }
+  const { data } = await supabase
+    .from('archer_comments')
+    .select('comment, created_at')
+    .eq('archer_id', archerId)
+    .eq('week_start', weekStart)
+    .single();
+  res.json(data ?? { comment: null });
 });
 
 // Récupère les créneaux d'un archer pour une semaine précise
