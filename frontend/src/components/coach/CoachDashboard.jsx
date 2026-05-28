@@ -9,6 +9,7 @@ import AddTrainingModal from './AddTrainingModal.jsx';
 import EditTrainingModal from './EditTrainingModal.jsx';
 import ArcherStats from './ArcherStats.jsx';
 import ArcherMessages from './ArcherMessages.jsx';
+import SessionDetailModal from './SessionDetailModal.jsx';
 import WelcomeScreen from '../shared/WelcomeScreen.jsx';
 import { usePushSubscription } from '../../hooks/usePushSubscription.js';
 
@@ -23,7 +24,8 @@ export default function CoachDashboard() {
   const [trainingTypes, setTrainingTypes]   = useState([]);
   const [addModal, setAddModal]             = useState(null);
   const [editModal, setEditModal]           = useState(null); // session en cours d'édition
-  const [activeTab, setActiveTab]           = useState('planning'); // 'planning' | 'stats'
+  const [activeTab, setActiveTab]           = useState('planning'); // 'planning' | 'stats' | 'messages'
+  const [viewModal, setViewModal]           = useState(null); // session à afficher en détail
   const [libDrag, setLibDrag]               = useState(null); // bloc bibliothèque en cours de drag
   const [sidebarOpen, setSidebarOpen]       = useState(true);
   const [loading, setLoading]               = useState(false);
@@ -404,6 +406,7 @@ export default function CoachDashboard() {
                         onMoveTraining={handleMoveTraining}
                         onDropFromLibrary={handleDropFromLibrary}
                         onEditTraining={session => setEditModal(session)}
+                        onViewSession={session => setViewModal(session)}
                         libDrag={libDrag}
                       />
                     </div>
@@ -436,6 +439,20 @@ export default function CoachDashboard() {
           )}
         </div>
       </main>
+
+      {viewModal && (
+        <SessionDetailModal
+          session={viewModal}
+          role="coach"
+          onClose={() => setViewModal(null)}
+          onEdit={session => { setViewModal(null); setEditModal(session); }}
+          onDelete={id => { handleDeleteTraining(id); setViewModal(null); }}
+          onUpdate={updated => {
+            setTrainingSessions(prev => prev.map(s => s.id === updated.id ? updated : s));
+            invalidateCache(selectedArcher, weekStart);
+          }}
+        />
+      )}
 
       {addModal && (
         <AddTrainingModal

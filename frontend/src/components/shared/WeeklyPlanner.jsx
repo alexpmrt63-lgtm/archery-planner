@@ -54,7 +54,7 @@ function SlotBlock({ slot, isTraining, onDelete, readOnly }) {
   );
 }
 
-function DraggableTraining({ session, readOnly, onDelete, onDragStart, onEdit }) {
+function DraggableTraining({ session, readOnly, onDelete, onDragStart, onEdit, onViewSession }) {
   const top    = minutesToPx(timeToMinutes(session.start_time));
   const height = Math.max(minutesToPx(timeToMinutes(session.end_time)) - top, 20);
   const color  = session.training_type?.color || '#3b82f6';
@@ -81,7 +81,10 @@ function DraggableTraining({ session, readOnly, onDelete, onDragStart, onEdit })
       onDrag={() => { dragMoved.current = true; }}
       onClick={e => {
         e.stopPropagation();
-        if (!readOnly && !dragMoved.current && onEdit) onEdit(session);
+        if (!dragMoved.current) {
+          if (onViewSession) onViewSession(session);
+          else if (!readOnly && onEdit) onEdit(session);
+        }
       }}
     >
       <div className="flex flex-col h-full px-1.5 py-1 gap-0.5 overflow-hidden">
@@ -118,15 +121,16 @@ function DraggableTraining({ session, readOnly, onDelete, onDragStart, onEdit })
 
 export default function WeeklyPlanner({
   weekStart,
-  coursSlots      = [],
+  coursSlots       = [],
   trainingSessions = [],
-  readOnly        = false,
+  readOnly         = false,
   onAddTraining,
   onDeleteTraining,
   onMoveTraining,
   onDropFromLibrary,
   onEditTraining,
-  libDrag         = null, // { id, title, color, duration_minutes } pendant un drag depuis la biblio
+  onViewSession,
+  libDrag          = null,
 }) {
   const [dragging, setDragging]   = useState(null); // { session, offsetY }
   const [ghost, setGhost]         = useState(null); // ghost déplacement interne
@@ -284,6 +288,7 @@ export default function WeeklyPlanner({
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
                   onEdit={onEditTraining}
+                  onViewSession={onViewSession}
                 />
               ))}
 

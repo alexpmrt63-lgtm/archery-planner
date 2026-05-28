@@ -7,6 +7,7 @@ import WeeklyPlanner from '../shared/WeeklyPlanner.jsx';
 import WeekPicker from '../shared/WeekPicker.jsx';
 import WelcomeScreen from '../shared/WelcomeScreen.jsx';
 import ArcherMessages from '../coach/ArcherMessages.jsx';
+import SessionDetailModal from '../coach/SessionDetailModal.jsx';
 import { usePushSubscription } from '../../hooks/usePushSubscription.js';
 
 const REFRESH_INTERVAL = 30_000;
@@ -30,6 +31,7 @@ export default function ArcherDashboard() {
   const [commentSending, setCommentSending]   = useState(false);
   const [commentMsg, setCommentMsg]           = useState('');
   const [tab, setTab]                         = useState('accueil');
+  const [viewSession, setViewSession]         = useState(null);
   const [loading, setLoading]                 = useState(false);
   const [lastRefresh, setLastRefresh]         = useState(null);
   const intervalRef = useRef(null);
@@ -198,7 +200,13 @@ export default function ArcherDashboard() {
                 Aucun créneau pour cette semaine. Uploadez votre emploi du temps scolaire pour commencer.
               </div>
             )}
-            <WeeklyPlanner weekStart={weekStart} coursSlots={coursSlots} trainingSessions={trainingSessions} readOnly={true} />
+            <WeeklyPlanner
+              weekStart={weekStart}
+              coursSlots={coursSlots}
+              trainingSessions={trainingSessions}
+              readOnly={true}
+              onViewSession={session => setViewSession(session)}
+            />
             <div className="flex items-center justify-between mt-3">
               <div className="flex gap-4 text-xs text-gray-500">
                 <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-gray-300 inline-block" /> Cours scolaire</span>
@@ -311,6 +319,18 @@ export default function ArcherDashboard() {
           </div>
         )}
       </main>
+
+      {viewSession && (
+        <SessionDetailModal
+          session={viewSession}
+          role="archer"
+          onClose={() => setViewSession(null)}
+          onUpdate={updated => {
+            setTrainingSessions(prev => prev.map(s => s.id === updated.id ? updated : s));
+            setViewSession(null);
+          }}
+        />
+      )}
     </div>
   );
 }
