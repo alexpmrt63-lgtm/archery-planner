@@ -18,7 +18,8 @@ const DURATION_OPTIONS = [
   { label: '4h',     value: 240 },
 ];
 
-const PX_PER_HOUR = 32; // hauteur visuelle par heure dans la bibliothèque
+const PX_PER_HOUR   = 36;   // hauteur visuelle par heure en mode développé
+const COMPACT_H     = 34;   // hauteur en mode compact
 
 function formatDuration(minutes) {
   const h = Math.floor(minutes / 60);
@@ -29,8 +30,10 @@ function formatDuration(minutes) {
 }
 
 function LibraryBlock({ type, onEdit, onDelete, onLibDragStart, onLibDragEnd }) {
-  const duration = type.duration_minutes || 120;
-  const height   = Math.max(Math.round((duration / 60) * PX_PER_HOUR), 40);
+  const [expanded, setExpanded] = useState(false);
+
+  const duration   = type.duration_minutes || 120;
+  const fullHeight = Math.max(Math.round((duration / 60) * PX_PER_HOUR), 52);
 
   return (
     <div
@@ -44,40 +47,59 @@ function LibraryBlock({ type, onEdit, onDelete, onLibDragStart, onLibDragEnd }) 
         onLibDragStart?.({ ...type, duration_minutes: duration });
       }}
       onDragEnd={() => onLibDragEnd?.()}
-      className="relative rounded-lg cursor-grab active:cursor-grabbing text-white px-2.5 py-2 flex flex-col justify-between select-none group shadow-sm transition-opacity hover:opacity-90"
-      style={{ backgroundColor: type.color, height: `${height}px` }}
+      onClick={() => setExpanded(v => !v)}
+      className="relative rounded-lg cursor-grab active:cursor-grabbing text-white px-2.5 select-none group shadow-sm overflow-hidden"
+      style={{
+        backgroundColor: type.color,
+        height: expanded ? `${fullHeight}px` : `${COMPACT_H}px`,
+        transition: 'height 0.18s ease',
+      }}
     >
-      {/* Icône drag */}
-      <div className="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition">
+      {/* Boutons édition/suppression — visibles au hover */}
+      <div
+        className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+        onClick={e => e.stopPropagation()}
+      >
         <button
-          onClick={e => { e.stopPropagation(); onEdit(type); }}
-          className="text-white/80 hover:text-white text-[11px] w-4 h-4 flex items-center justify-center rounded bg-black/20 hover:bg-black/40"
+          onClick={() => onEdit(type)}
+          className="text-white/80 hover:text-white text-[11px] w-5 h-5 flex items-center justify-center rounded bg-black/25 hover:bg-black/45"
           title="Modifier"
         >✎</button>
         <button
-          onClick={e => { e.stopPropagation(); onDelete(type.id); }}
-          className="text-white/80 hover:text-white text-[11px] w-4 h-4 flex items-center justify-center rounded bg-black/20 hover:bg-black/40"
+          onClick={() => onDelete(type.id)}
+          className="text-white/80 hover:text-white text-[11px] w-5 h-5 flex items-center justify-center rounded bg-black/25 hover:bg-black/45"
           title="Supprimer"
         >✕</button>
       </div>
 
-      <span className="text-xs font-bold leading-tight pr-10 truncate">{type.title}</span>
+      {/* Mode compact : tout sur une ligne */}
+      {!expanded && (
+        <div className="flex items-center justify-between h-full gap-2 pr-12">
+          <span className="text-xs font-bold truncate leading-none">{type.title}</span>
+          <span className="text-[10px] opacity-70 font-medium shrink-0">{formatDuration(duration)}</span>
+        </div>
+      )}
 
-      <div className="flex items-center gap-1 mt-auto pt-1">
-        {/* Icône de drag */}
-        <svg className="w-3 h-3 opacity-50" viewBox="0 0 24 24" fill="currentColor">
-          <circle cx="9" cy="6"  r="1.5"/><circle cx="15" cy="6"  r="1.5"/>
-          <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
-          <circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/>
-        </svg>
-        <span className="text-[10px] opacity-70 font-medium">{formatDuration(duration)}</span>
-      </div>
+      {/* Mode développé : layout pleine hauteur */}
+      {expanded && (
+        <div className="flex flex-col justify-between h-full py-2 pr-10">
+          <span className="text-xs font-bold leading-tight">{type.title}</span>
+          <div className="flex items-center gap-1 mt-auto">
+            <svg className="w-3 h-3 opacity-50" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="9" cy="6"  r="1.5"/><circle cx="15" cy="6"  r="1.5"/>
+              <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
+              <circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/>
+            </svg>
+            <span className="text-[10px] opacity-70 font-medium">{formatDuration(duration)}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 export default function TrainingTypesPanel({ types, onUpdate, onLibDragStart, onLibDragEnd }) {
-  const [form, setForm]     = useState({ title: '', color: PRESET_COLORS[0], duration_minutes: 120 });
+  const [form, setForm]       = useState({ title: '', color: PRESET_COLORS[0], duration_minutes: 120 });
   const [editing, setEditing] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -93,7 +115,7 @@ export default function TrainingTypesPanel({ types, onUpdate, onLibDragStart, on
         await api.post('/training-types', form);
       }
       setForm({ title: '', color: PRESET_COLORS[0], duration_minutes: 120 });
-      onUpdate();
+      await onUpdate(); // ← await : attend que la liste soit rechargée avant de finir
     } finally {
       setLoading(false);
     }
@@ -112,7 +134,7 @@ export default function TrainingTypesPanel({ types, onUpdate, onLibDragStart, on
   async function handleDelete(id) {
     if (!confirm('Supprimer ce type d\'entraînement ?')) return;
     await api.delete(`/training-types/${id}`);
-    onUpdate();
+    await onUpdate();
   }
 
   return (
@@ -128,7 +150,7 @@ export default function TrainingTypesPanel({ types, onUpdate, onLibDragStart, on
           <p className="text-xs text-gray-400 italic">Créez un premier type ci-dessous.</p>
         )}
 
-        <div className="space-y-2">
+        <div className="flex flex-col gap-1">
           {types.map(t => (
             <LibraryBlock
               key={t.id}
@@ -145,13 +167,13 @@ export default function TrainingTypesPanel({ types, onUpdate, onLibDragStart, on
       {/* ── Formulaire ── */}
       <div className="border-t border-gray-200 pt-3 shrink-0">
         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
-          {editing ? `Modifier — ${editing.title}` : 'Nouveau type'}
+          {editing ? `Modifier — ${editing.title}` : 'Nouvelle situation'}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-2">
           <input
             type="text"
-            placeholder="Nom du type…"
+            placeholder="Nom de la situation…"
             value={form.title}
             onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
             className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -179,7 +201,7 @@ export default function TrainingTypesPanel({ types, onUpdate, onLibDragStart, on
             ))}
           </div>
 
-          {/* Aperçu du bloc */}
+          {/* Aperçu */}
           {form.title && (
             <div
               className="w-full rounded-lg px-2.5 py-1.5 text-white text-xs font-bold truncate"
