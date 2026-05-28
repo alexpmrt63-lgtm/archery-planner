@@ -14,8 +14,8 @@ self.addEventListener('push', event => {
   const title = data.title || 'Archery Planner';
   const options = {
     body:    data.body  || '',
-    icon:    '/icon.png',   // remplace par ton icône si dispo
-    badge:   '/badge.png',
+    icon:    '/pole-logo.jpeg',
+    badge:   '/pole-logo.jpeg',
     tag:     data.tag  || 'archery-notification',
     renotify: true,
     data:    { url: data.url || '/' },
