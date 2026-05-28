@@ -104,9 +104,9 @@ function DraggableTraining({ session, readOnly, onDelete, onDragStart, onEdit, o
             {session.start_time.slice(0, 5)} – {session.end_time.slice(0, 5)}
           </div>
         )}
-        {/* Ligne 3 : notes */}
+        {/* Ligne 3 : notes coach */}
         {height >= 52 && session.notes && (
-          <div className="text-[9px] opacity-70 leading-tight mt-0.5 line-clamp-3 break-words">
+          <div className="text-[9px] opacity-70 leading-tight mt-0.5 line-clamp-2 break-words">
             {session.notes}
           </div>
         )}
@@ -115,6 +115,14 @@ function DraggableTraining({ session, readOnly, onDelete, onDragStart, onEdit, o
           <div className="absolute bottom-1 right-1 opacity-0 group-hover:opacity-60 text-[9px]">✎</div>
         )}
       </div>
+
+      {/* Pastille : l'archer a écrit un commentaire */}
+      {session.archer_notes && (
+        <div
+          className="absolute bottom-1 left-1 w-2 h-2 rounded-full bg-yellow-300 shadow-sm ring-1 ring-yellow-400/60"
+          title="L'archer a ajouté un commentaire"
+        />
+      )}
     </div>
   );
 }
