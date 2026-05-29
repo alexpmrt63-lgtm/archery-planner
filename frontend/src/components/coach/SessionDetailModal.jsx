@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import api from '../../api/client.js';
 
-const DAYS = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+const DAYS = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 
 function formatDuration(start, end) {
   const toMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };

@@ -14,7 +14,7 @@ export default function AddTrainingModal({ defaultDay, defaultStart, trainingTyp
     return `${String(hh + h).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
   }
 
-  const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+  const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">

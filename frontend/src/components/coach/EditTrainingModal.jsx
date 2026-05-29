@@ -8,7 +8,7 @@ export default function EditTrainingModal({ session, trainingTypes, onSave, onDe
     notes:            session.notes || '',
   });
 
-  const DAYS = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+  const DAYS = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
   const selectedType = trainingTypes.find(t => t.id === form.training_type_id);
 
   return (

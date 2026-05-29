@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { format, addDays, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
-const DAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+const DAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const START_HOUR = 7;
-const END_HOUR = 21;
+const END_HOUR   = 23;   // grille jusqu'à 23h, sessions limitées à 22h30
+const END_MINUTES = 22 * 60 + 30; // 22:30 — borne max de placement
 const HOURS = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => i + START_HOUR);
 const CELL_HEIGHT = 52; // px par heure
 
@@ -18,7 +19,7 @@ function minutesToPx(minutes) {
 }
 
 function minutesToTime(min) {
-  const clamped = Math.max(START_HOUR * 60, Math.min(END_HOUR * 60, min));
+  const clamped = Math.max(START_HOUR * 60, Math.min(END_MINUTES, min));
   return `${String(Math.floor(clamped / 60)).padStart(2, '0')}:${String(clamped % 60).padStart(2, '0')}`;
 }
 
@@ -227,7 +228,7 @@ export default function WeeklyPlanner({
 
       {/* En-tête jours */}
       <div className="grid border-b border-gray-200 bg-gray-50"
-        style={{ gridTemplateColumns: '48px repeat(6, 1fr)' }}>
+        style={{ gridTemplateColumns: '48px repeat(7, 1fr)' }}>
         <div />
         {DAYS.map((day, i) => (
           <div key={day} className="py-2 text-center border-l border-gray-200">
@@ -238,7 +239,7 @@ export default function WeeklyPlanner({
       </div>
 
       {/* Grille horaire */}
-      <div className="grid" style={{ gridTemplateColumns: '48px repeat(6, 1fr)' }}>
+      <div className="grid" style={{ gridTemplateColumns: '48px repeat(7, 1fr)' }}>
 
         {/* Colonne heures */}
         <div className="border-r border-gray-100">
