@@ -140,12 +140,16 @@ export default function WeeklyPlanner({
   onEditTraining,
   onViewSession,
   libDrag          = null,
+  dayColWidth      = null, // px par colonne jour (null = 1fr); active le scroll horizontal
 }) {
   const [dragging, setDragging]   = useState(null); // { session, offsetY }
   const [ghost, setGhost]         = useState(null); // ghost déplacement interne
   const [libGhost, setLibGhost]   = useState(null); // ghost dépôt depuis la bibliothèque
 
   const weekDates = DAYS.map((_, i) => addDays(parseISO(weekStart), i));
+
+  // Gabarit de colonnes : fixe (px) si dayColWidth, sinon auto (1fr)
+  const colTemplate = `48px repeat(${DAYS.length}, ${dayColWidth ? `${dayColWidth}px` : '1fr'})`;
 
   // ── Clic pour ajouter (mode sans bibliothèque) ──
   function handleColumnClick(e, dayIndex) {
@@ -224,11 +228,14 @@ export default function WeeklyPlanner({
   const totalHeight = CELL_HEIGHT * HOURS.length;
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm select-none">
+    <div
+      className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm select-none"
+      style={dayColWidth ? { WebkitOverflowScrolling: 'touch' } : undefined}
+    >
 
       {/* En-tête jours */}
       <div className="grid border-b border-gray-200 bg-gray-50"
-        style={{ gridTemplateColumns: '48px repeat(7, 1fr)' }}>
+        style={{ gridTemplateColumns: colTemplate }}>
         <div />
         {DAYS.map((day, i) => (
           <div key={day} className="py-2 text-center border-l border-gray-200">
@@ -239,7 +246,7 @@ export default function WeeklyPlanner({
       </div>
 
       {/* Grille horaire */}
-      <div className="grid" style={{ gridTemplateColumns: '48px repeat(7, 1fr)' }}>
+      <div className="grid" style={{ gridTemplateColumns: colTemplate }}>
 
         {/* Colonne heures */}
         <div className="border-r border-gray-100">

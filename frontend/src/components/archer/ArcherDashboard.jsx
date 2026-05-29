@@ -230,6 +230,7 @@ export default function ArcherDashboard() {
               trainingSessions={trainingSessions}
               readOnly={true}
               onViewSession={session => setViewSession(session)}
+              dayColWidth={96}
             />
 
             {/* Légende */}
