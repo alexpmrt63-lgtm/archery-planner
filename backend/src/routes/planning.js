@@ -5,6 +5,26 @@ import { sendPushToUser, sendPushToAllCoaches } from '../utils/webpush.js';
 
 const router = Router();
 
+// ── Rate-limiter notifications planning ──────────────────────────────────────
+// Max 1 notification "planning" par archer sur une fenêtre glissante d'1 heure.
+// Stocké en mémoire (suffit : si le serveur redémarre, la limite repart à zéro).
+const PLANNING_NOTIF_COOLDOWN = 60 * 60 * 1000; // 1 heure en ms
+const planningNotifLastSent   = new Map();        // archer_id → timestamp (ms)
+
+/**
+ * Renvoie true et mémorise l'heure si l'archer peut recevoir une notif planning.
+ * Renvoie false si une notif a déjà été envoyée dans la dernière heure.
+ */
+function canNotifyArcher(archerId) {
+  const last = planningNotifLastSent.get(archerId);
+  const now  = Date.now();
+  if (!last || now - last >= PLANNING_NOTIF_COOLDOWN) {
+    planningNotifLastSent.set(archerId, now);
+    return true;
+  }
+  return false;
+}
+
 // Récupère les entraînements d'un archer pour une semaine
 router.get('/:archerId/:weekStart', requireAuth, async (req, res) => {
   const { archerId, weekStart } = req.params;
@@ -45,8 +65,9 @@ router.post('/', requireAuth, requireCoach, async (req, res) => {
 
   if (error) return res.status(500).json({ error: error.message });
 
-  // Notifie l'archer seulement pour la première séance de la semaine (fire-and-forget)
-  if (isFirstSession) {
+  // Notifie l'archer seulement pour la première séance de la semaine,
+  // et au maximum une fois par heure (fire-and-forget)
+  if (isFirstSession && canNotifyArcher(archer_id)) {
     sendPushToUser(archer_id, {
       title: '🏹 Planning mis à jour',
       body:  `${req.user.name} est en train de rédiger ton emploi du temps !`,
@@ -72,13 +93,15 @@ router.put('/:sessionId', requireAuth, requireCoach, async (req, res) => {
 
   if (error) return res.status(500).json({ error: error.message });
 
-  // Notifie l'archer que son planning a été modifié (fire-and-forget)
-  sendPushToUser(data.archer_id, {
-    title: '🏹 Planning modifié',
-    body:  `${req.user.name} a modifié ton emploi du temps.`,
-    tag:   `planning-update-${data.archer_id}-${data.week_start}`,
-    url:   '/',
-  }).catch(() => {});
+  // Notifie l'archer que son planning a été modifié, max 1 fois/heure (fire-and-forget)
+  if (canNotifyArcher(data.archer_id)) {
+    sendPushToUser(data.archer_id, {
+      title: '🏹 Planning modifié',
+      body:  `${req.user.name} a modifié ton emploi du temps.`,
+      tag:   `planning-update-${data.archer_id}-${data.week_start}`,
+      url:   '/',
+    }).catch(() => {});
+  }
 
   res.json(data);
 });
@@ -124,13 +147,15 @@ router.post('/copy', requireAuth, requireCoach, async (req, res) => {
     const { error: insErr } = await supabase.from('training_sessions').insert(rows);
     if (!insErr) {
       copied++;
-      // Notifie l'archer (fire-and-forget)
-      sendPushToUser(targetId, {
-        title: '🏹 Planning partagé',
-        body:  `${req.user.name} t'a attribué un planning pour la semaine du ${week_start}.`,
-        tag:   `planning-shared-${targetId}-${week_start}`,
-        url:   '/',
-      }).catch(() => {});
+      // Notifie l'archer, max 1 fois/heure (fire-and-forget)
+      if (canNotifyArcher(targetId)) {
+        sendPushToUser(targetId, {
+          title: '🏹 Planning partagé',
+          body:  `${req.user.name} t'a attribué un planning pour la semaine du ${week_start}.`,
+          tag:   `planning-shared-${targetId}-${week_start}`,
+          url:   '/',
+        }).catch(() => {});
+      }
     }
   }
 
