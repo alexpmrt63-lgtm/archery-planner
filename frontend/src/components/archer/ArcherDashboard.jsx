@@ -37,6 +37,20 @@ export default function ArcherDashboard() {
   const [lastRefresh, setLastRefresh]         = useState(null);
   const intervalRef = useRef(null);
 
+  // Créneaux personnels (onglet EDT)
+  const [persoSlots, setPersoSlots]           = useState([]);
+  const [showManualForm, setShowManualForm]   = useState(false);
+  const [manualForm, setManualForm]           = useState({ day_of_week: 1, start_time: '08:00', end_time: '09:00', label: '' });
+  const [manualSaving, setManualSaving]       = useState(false);
+  const [manualMsg, setManualMsg]             = useState('');
+
+  const loadPersoSlots = useCallback(async () => {
+    try {
+      const { data } = await api.get(`/schedule/${user.id}/${uploadWeekStart}`);
+      setPersoSlots(data.filter(s => s.type === 'perso'));
+    } catch { setPersoSlots([]); }
+  }, [user.id, uploadWeekStart]);
+
   const loadData = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     try {
@@ -76,7 +90,10 @@ export default function ArcherDashboard() {
     setUploadedSlots([]);
     setCommentMsg('');
     setComment('');
-  }, [uploadWeekStart]);
+    setManualMsg('');
+    setShowManualForm(false);
+    loadPersoSlots();
+  }, [uploadWeekStart, loadPersoSlots]);
 
   async function handleSendComment() {
     if (!comment.trim()) return;
@@ -115,6 +132,38 @@ export default function ArcherDashboard() {
     } finally {
       setUploading(false);
       e.target.value = '';
+    }
+  }
+
+  async function handleAddManualSlot(e) {
+    e.preventDefault();
+    setManualSaving(true);
+    setManualMsg('');
+    try {
+      await api.post('/schedule/manual', {
+        week_start:  uploadWeekStart,
+        day_of_week: manualForm.day_of_week,
+        start_time:  manualForm.start_time,
+        end_time:    manualForm.end_time,
+        label:       manualForm.label.trim() || 'Indisponible',
+      });
+      setManualMsg('✓ Créneau ajouté !');
+      setManualForm({ day_of_week: 1, start_time: '08:00', end_time: '09:00', label: '' });
+      setShowManualForm(false);
+      await loadPersoSlots();
+    } catch (err) {
+      setManualMsg('Erreur : ' + (err.response?.data?.error || err.message));
+    } finally {
+      setManualSaving(false);
+    }
+  }
+
+  async function handleDeleteManualSlot(slotId) {
+    try {
+      await api.delete(`/schedule/${slotId}`);
+      setPersoSlots(prev => prev.filter(s => s.id !== slotId));
+    } catch (err) {
+      alert('Erreur : ' + (err.response?.data?.error || err.message));
     }
   }
 
@@ -237,8 +286,9 @@ export default function ArcherDashboard() {
 
             {/* Légende */}
             <div className="flex items-center justify-between mt-2 px-0.5">
-              <div className="flex gap-3 text-[11px] text-gray-500">
+              <div className="flex gap-3 text-[11px] text-gray-500 flex-wrap">
                 <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-gray-300 inline-block" /> Scolaire</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded border border-dashed border-zinc-400 bg-zinc-200 inline-block" /> Perso</span>
                 <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-blue-500 inline-block" /> Entraînement</span>
               </div>
               {lastRefresh && (
@@ -353,6 +403,117 @@ export default function ArcherDashboard() {
                         </div>
                       ))}
                     </div>
+                  </div>
+                )}
+              </div>
+
+              {/* ── Indisponibilités personnelles ── */}
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-5 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <h2 className="font-bold text-gray-900 text-sm sm:text-base mb-0.5">🚫 Indisponibilités</h2>
+                    <p className="text-xs sm:text-sm text-gray-500">Bloquez des créneaux personnels visibles par le coach.</p>
+                  </div>
+                  <button
+                    onClick={() => { setShowManualForm(v => !v); setManualMsg(''); }}
+                    className="shrink-0 text-xs bg-zinc-700 hover:bg-zinc-800 text-white px-3 py-1.5 rounded-lg font-semibold transition"
+                  >
+                    {showManualForm ? 'Annuler' : '+ Ajouter'}
+                  </button>
+                </div>
+
+                {/* Formulaire de création */}
+                {showManualForm && (
+                  <form onSubmit={handleAddManualSlot} className="space-y-2.5 border border-dashed border-zinc-300 rounded-xl p-3 bg-zinc-50">
+                    <div>
+                      <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Jour</label>
+                      <select
+                        value={manualForm.day_of_week}
+                        onChange={e => setManualForm(f => ({ ...f, day_of_week: Number(e.target.value) }))}
+                        className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-zinc-500 bg-white"
+                      >
+                        {['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'].map((d, i) => (
+                          <option key={i} value={i + 1}>{d}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Début</label>
+                        <input
+                          type="time"
+                          value={manualForm.start_time}
+                          onChange={e => setManualForm(f => ({ ...f, start_time: e.target.value }))}
+                          required
+                          className="w-full text-base sm:text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-zinc-500 bg-white"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Fin</label>
+                        <input
+                          type="time"
+                          value={manualForm.end_time}
+                          onChange={e => setManualForm(f => ({ ...f, end_time: e.target.value }))}
+                          required
+                          className="w-full text-base sm:text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-zinc-500 bg-white"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Motif (optionnel)</label>
+                      <input
+                        type="text"
+                        value={manualForm.label}
+                        onChange={e => setManualForm(f => ({ ...f, label: e.target.value }))}
+                        placeholder="Ex : entraînement club, rendez-vous…"
+                        className="w-full text-base sm:text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-zinc-500 bg-white"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={manualSaving}
+                      className="w-full py-2.5 rounded-lg bg-zinc-700 text-white text-sm font-semibold hover:bg-zinc-800 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {manualSaving ? 'Ajout…' : 'Ajouter le créneau'}
+                    </button>
+                    {manualMsg && (
+                      <div className={`text-sm px-3 py-2 rounded-lg ${
+                        manualMsg.startsWith('✓') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
+                      }`}>
+                        {manualMsg}
+                      </div>
+                    )}
+                  </form>
+                )}
+
+                {/* Message succès hors formulaire */}
+                {!showManualForm && manualMsg && (
+                  <div className="text-sm px-3 py-2 rounded-lg bg-green-50 text-green-700 border border-green-200">
+                    {manualMsg}
+                  </div>
+                )}
+
+                {/* Liste des créneaux */}
+                {persoSlots.length === 0 ? (
+                  <p className="text-xs text-gray-400 italic">Aucun créneau pour cette semaine.</p>
+                ) : (
+                  <div className="space-y-1.5">
+                    {[...persoSlots]
+                      .sort((a, b) => a.day_of_week - b.day_of_week || a.start_time.localeCompare(b.start_time))
+                      .map(slot => (
+                        <div key={slot.id} className="flex items-center gap-2 bg-zinc-100 border border-dashed border-zinc-300 rounded-lg px-3 py-2">
+                          <span className="text-xs font-semibold text-zinc-700 shrink-0 w-7">
+                            {['','Lun','Mar','Mer','Jeu','Ven','Sam','Dim'][slot.day_of_week]}
+                          </span>
+                          <span className="text-xs text-zinc-600 shrink-0">{slot.start_time.slice(0,5)}–{slot.end_time.slice(0,5)}</span>
+                          <span className="text-xs text-zinc-500 flex-1 truncate">{slot.label || 'Indisponible'}</span>
+                          <button
+                            onClick={() => handleDeleteManualSlot(slot.id)}
+                            className="text-zinc-400 hover:text-red-500 transition text-sm leading-none shrink-0 p-0.5"
+                            title="Supprimer"
+                          >✕</button>
+                        </div>
+                      ))}
                   </div>
                 )}
               </div>

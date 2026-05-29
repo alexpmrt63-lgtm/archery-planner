@@ -31,15 +31,20 @@ function pxToTime(px) {
 
 // ── Bloc cours scolaire ───────────────────────────────────────────────────────
 function SlotBlock({ slot, isTraining, onDelete, readOnly }) {
-  const top    = minutesToPx(timeToMinutes(slot.start_time));
-  const height = Math.max(minutesToPx(timeToMinutes(slot.end_time)) - top, 20);
-  const color  = isTraining ? (slot.training_type?.color || '#3b82f6') : null;
-  const label  = isTraining ? (slot.training_type?.title || 'Entraînement') : (slot.label || 'Cours');
+  const top     = minutesToPx(timeToMinutes(slot.start_time));
+  const height  = Math.max(minutesToPx(timeToMinutes(slot.end_time)) - top, 20);
+  const color   = isTraining ? (slot.training_type?.color || '#3b82f6') : null;
+  const label   = isTraining ? (slot.training_type?.title || 'Entraînement') : (slot.label || 'Cours');
+  const isPerso = !isTraining && slot.type === 'perso';
 
   return (
     <div
       className={`absolute left-0.5 right-0.5 rounded overflow-hidden select-none z-10 ${
-        isTraining ? 'text-white shadow-sm' : 'bg-gray-200 border border-gray-300 text-gray-600'
+        isTraining
+          ? 'text-white shadow-sm'
+          : isPerso
+            ? 'bg-zinc-200 border border-zinc-400 border-dashed text-zinc-600'
+            : 'bg-gray-200 border border-gray-300 text-gray-600'
       }`}
       style={{ top: `${top}px`, height: `${height}px`, ...(color ? { backgroundColor: color } : {}) }}
       onClick={e => e.stopPropagation()}
