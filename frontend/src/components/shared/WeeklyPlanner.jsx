@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { format, addDays, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 const DAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-const START_HOUR = 7;
-const END_HOUR   = 23;   // grille jusqu'à 23h, sessions limitées à 22h30
+const START_HOUR  = 7;
+const END_HOUR    = 23;   // grille jusqu'à 23h, sessions limitées à 22h30
 const END_MINUTES = 22 * 60 + 30; // 22:30 — borne max de placement
-const HOURS = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => i + START_HOUR);
+const HOURS       = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => i + START_HOUR);
 const CELL_HEIGHT = 52; // px par heure
+const MIN_DURATION = 15; // durée minimale en minutes
 
 function timeToMinutes(time) {
   const [h, m] = time.split(':').map(Number);
@@ -28,6 +29,7 @@ function pxToTime(px) {
   return minutesToTime(totalMinutes);
 }
 
+// ── Bloc cours scolaire ───────────────────────────────────────────────────────
 function SlotBlock({ slot, isTraining, onDelete, readOnly }) {
   const top    = minutesToPx(timeToMinutes(slot.start_time));
   const height = Math.max(minutesToPx(timeToMinutes(slot.end_time)) - top, 20);
@@ -55,7 +57,9 @@ function SlotBlock({ slot, isTraining, onDelete, readOnly }) {
   );
 }
 
-function DraggableTraining({ session, readOnly, onDelete, onDragStart, onEdit, onViewSession }) {
+// ── Bloc entraînement draggable + poignées de redimensionnement ───────────────
+function DraggableTraining({ session, readOnly, onDelete, onDragStart, onEdit, onViewSession, onResizeStart }) {
+  const containerRef = useRef(null);
   const top    = minutesToPx(timeToMinutes(session.start_time));
   const height = Math.max(minutesToPx(timeToMinutes(session.end_time)) - top, 20);
   const color  = session.training_type?.color || '#3b82f6';
@@ -64,9 +68,19 @@ function DraggableTraining({ session, readOnly, onDelete, onDragStart, onEdit, o
   // Distingue un vrai clic d'un drag
   const dragMoved = { current: false };
 
+  function startResize(edge, e) {
+    e.preventDefault();
+    e.stopPropagation();
+    // Le parent direct est la colonne jour
+    const colEl     = containerRef.current?.parentElement;
+    const columnTop = colEl?.getBoundingClientRect().top ?? 0;
+    onResizeStart?.(session, edge, columnTop);
+  }
+
   return (
     <div
-      className={`absolute left-0.5 right-0.5 rounded overflow-hidden z-20 text-white shadow group ${
+      ref={containerRef}
+      className={`absolute left-0.5 right-0.5 rounded overflow-visible z-20 text-white shadow group ${
         readOnly ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'
       }`}
       style={{ top: `${top}px`, height: `${height}px`, backgroundColor: color }}
@@ -88,7 +102,8 @@ function DraggableTraining({ session, readOnly, onDelete, onDragStart, onEdit, o
         }
       }}
     >
-      <div className="flex flex-col h-full px-1.5 py-1 gap-0.5 overflow-hidden">
+      {/* Contenu */}
+      <div className="flex flex-col h-full px-1.5 py-1 gap-0.5 overflow-hidden rounded">
         {/* Ligne 1 : titre + bouton suppr */}
         <div className="flex items-start justify-between gap-0.5">
           <span className="text-[10px] font-bold leading-tight truncate">{label}</span>
@@ -124,10 +139,38 @@ function DraggableTraining({ session, readOnly, onDelete, onDragStart, onEdit, o
           title="L'archer a ajouté un commentaire"
         />
       )}
+
+      {/* ── Poignées de redimensionnement (mode édition uniquement) ── */}
+      {!readOnly && onResizeStart && (
+        <>
+          {/* Poignée haute — change l'heure de début */}
+          <div
+            className="absolute left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-white border-2 shadow-md
+                       opacity-0 group-hover:opacity-100 transition-opacity cursor-ns-resize z-30
+                       flex items-center justify-center"
+            style={{ top: '-7px', borderColor: color }}
+            onMouseDown={e => startResize('top', e)}
+          >
+            <div className="w-1.5 h-0.5 rounded-full bg-gray-400" />
+          </div>
+
+          {/* Poignée basse — change l'heure de fin */}
+          <div
+            className="absolute left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-white border-2 shadow-md
+                       opacity-0 group-hover:opacity-100 transition-opacity cursor-ns-resize z-30
+                       flex items-center justify-center"
+            style={{ bottom: '-7px', borderColor: color }}
+            onMouseDown={e => startResize('bottom', e)}
+          >
+            <div className="w-1.5 h-0.5 rounded-full bg-gray-400" />
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
+// ── Composant principal ───────────────────────────────────────────────────────
 export default function WeeklyPlanner({
   weekStart,
   coursSlots       = [],
@@ -140,26 +183,95 @@ export default function WeeklyPlanner({
   onEditTraining,
   onViewSession,
   libDrag          = null,
-  dayColWidth      = null, // px par colonne jour (null = 1fr); active le scroll horizontal
+  dayColWidth      = null,
 }) {
-  const [dragging, setDragging]   = useState(null); // { session, offsetY }
-  const [ghost, setGhost]         = useState(null); // ghost déplacement interne
-  const [libGhost, setLibGhost]   = useState(null); // ghost dépôt depuis la bibliothèque
+  const [dragging, setDragging]     = useState(null); // { session, offsetY }
+  const [ghost, setGhost]           = useState(null); // ghost déplacement interne
+  const [libGhost, setLibGhost]     = useState(null); // ghost dépôt bibliothèque
+  const [resizeGhost, setResizeGhost] = useState(null); // ghost redimensionnement
+  // { sessionId, day, startTime, endTime }
 
-  const weekDates = DAYS.map((_, i) => addDays(parseISO(weekStart), i));
+  const resizingRef = useRef(null);
+  // { session, edge:'top'|'bottom', columnTop, currentStart, currentEnd }
 
-  // Gabarit de colonnes : fixe (px) si dayColWidth, sinon auto (1fr)
+  const weekDates  = DAYS.map((_, i) => addDays(parseISO(weekStart), i));
   const colTemplate = `48px repeat(${DAYS.length}, ${dayColWidth ? `${dayColWidth}px` : '1fr'})`;
 
-  // ── Clic pour ajouter (mode sans bibliothèque) ──
+  // ── Redimensionnement : écouteurs globaux ────────────────────────────────
+  useEffect(() => {
+    function onMouseMove(e) {
+      const r = resizingRef.current;
+      if (!r) return;
+
+      const y           = e.clientY - r.columnTop;
+      const snappedTime = pxToTime(Math.max(0, y));
+
+      if (r.edge === 'top') {
+        // L'heure de début recule ou avance, l'heure de fin reste fixe
+        const endMin      = timeToMinutes(r.currentEnd);
+        const newStartMin = Math.min(timeToMinutes(snappedTime), endMin - MIN_DURATION);
+        r.currentStart    = minutesToTime(Math.max(START_HOUR * 60, newStartMin));
+      } else {
+        // L'heure de fin recule ou avance, l'heure de début reste fixe
+        const startMin  = timeToMinutes(r.currentStart);
+        const newEndMin = Math.max(timeToMinutes(snappedTime), startMin + MIN_DURATION);
+        r.currentEnd    = minutesToTime(newEndMin);
+      }
+
+      setResizeGhost({
+        sessionId: r.session.id,
+        day:       r.session.day_of_week,
+        startTime: r.currentStart,
+        endTime:   r.currentEnd,
+      });
+    }
+
+    function onMouseUp() {
+      const r = resizingRef.current;
+      if (r && (r.currentStart !== r.session.start_time || r.currentEnd !== r.session.end_time)) {
+        onMoveTraining?.(r.session.id, {
+          day_of_week: r.session.day_of_week,
+          start_time:  r.currentStart,
+          end_time:    r.currentEnd,
+        });
+      }
+      resizingRef.current = null;
+      setResizeGhost(null);
+    }
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup',   onMouseUp);
+    return () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup',   onMouseUp);
+    };
+  }, [onMoveTraining]);
+
+  function handleResizeStart(session, edge, columnTop) {
+    resizingRef.current = {
+      session,
+      edge,
+      columnTop,
+      currentStart: session.start_time,
+      currentEnd:   session.end_time,
+    };
+    setResizeGhost({
+      sessionId: session.id,
+      day:       session.day_of_week,
+      startTime: session.start_time,
+      endTime:   session.end_time,
+    });
+  }
+
+  // ── Clic pour ajouter ────────────────────────────────────────────────────
   function handleColumnClick(e, dayIndex) {
-    if (readOnly || !onAddTraining || libDrag) return;
-    const rect = e.currentTarget.getBoundingClientRect();
+    if (readOnly || !onAddTraining || libDrag || resizingRef.current) return;
+    const rect      = e.currentTarget.getBoundingClientRect();
     const startTime = pxToTime(e.clientY - rect.top);
     onAddTraining({ day: dayIndex + 1, startTime });
   }
 
-  // ── Drag interne ──
+  // ── Drag interne ─────────────────────────────────────────────────────────
   function handleDragStart(session, offsetY) {
     setDragging({ session, offsetY });
   }
@@ -168,7 +280,6 @@ export default function WeeklyPlanner({
     e.preventDefault();
     const rect = e.currentTarget.getBoundingClientRect();
 
-    // Ghost bibliothèque
     if (libDrag) {
       const startTime = pxToTime(e.clientY - rect.top);
       const startMin  = timeToMinutes(startTime);
@@ -178,12 +289,11 @@ export default function WeeklyPlanner({
       return;
     }
 
-    // Ghost déplacement interne
     if (!dragging) return;
-    const y         = e.clientY - rect.top - dragging.offsetY;
-    const startTime = pxToTime(Math.max(0, y));
+    const y           = e.clientY - rect.top - dragging.offsetY;
+    const startTime   = pxToTime(Math.max(0, y));
     const durationMin = timeToMinutes(dragging.session.end_time) - timeToMinutes(dragging.session.start_time);
-    const endTime   = minutesToTime(timeToMinutes(startTime) + durationMin);
+    const endTime     = minutesToTime(timeToMinutes(startTime) + durationMin);
     setGhost({ day: dayIndex + 1, startTime, endTime });
     setLibGhost(null);
   }
@@ -191,7 +301,6 @@ export default function WeeklyPlanner({
   function handleDrop(e, dayIndex) {
     e.preventDefault();
 
-    // Dépôt depuis la bibliothèque
     const rawLib = e.dataTransfer.getData('application/x-library');
     if (rawLib) {
       const { training_type_id, duration_minutes } = JSON.parse(rawLib);
@@ -204,7 +313,6 @@ export default function WeeklyPlanner({
       return;
     }
 
-    // Déplacement interne
     if (!dragging || !ghost) { setDragging(null); setGhost(null); return; }
     onMoveTraining?.(dragging.session.id, {
       day_of_week: ghost.day,
@@ -215,15 +323,8 @@ export default function WeeklyPlanner({
     setGhost(null);
   }
 
-  function handleDragLeave() {
-    setLibGhost(null);
-  }
-
-  function handleDragEnd() {
-    setDragging(null);
-    setGhost(null);
-    setLibGhost(null);
-  }
+  function handleDragLeave() { setLibGhost(null); }
+  function handleDragEnd()   { setDragging(null); setGhost(null); setLibGhost(null); }
 
   const totalHeight = CELL_HEIGHT * HOURS.length;
 
@@ -232,7 +333,6 @@ export default function WeeklyPlanner({
       className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm select-none"
       style={dayColWidth ? { WebkitOverflowScrolling: 'touch' } : undefined}
     >
-
       {/* En-tête jours */}
       <div className="grid border-b border-gray-200 bg-gray-50"
         style={{ gridTemplateColumns: colTemplate }}>
@@ -260,11 +360,12 @@ export default function WeeklyPlanner({
 
         {/* Colonnes jours */}
         {DAYS.map((_, dayIdx) => {
-          const dayNum     = dayIdx + 1;
-          const dayCours   = coursSlots.filter(s => s.day_of_week === dayNum);
+          const dayNum      = dayIdx + 1;
+          const dayCours    = coursSlots.filter(s => s.day_of_week === dayNum);
           const dayTraining = trainingSessions.filter(s => s.day_of_week === dayNum);
-          const showGhost   = ghost?.day    === dayNum && dragging;
+          const showGhost   = ghost?.day === dayNum && dragging;
           const showLibGhost = libGhost?.day === dayNum && libDrag;
+          const showResize  = resizeGhost?.day === dayNum;
 
           return (
             <div
@@ -305,6 +406,7 @@ export default function WeeklyPlanner({
                   onDragEnd={handleDragEnd}
                   onEdit={onEditTraining}
                   onViewSession={onViewSession}
+                  onResizeStart={!readOnly ? handleResizeStart : undefined}
                 />
               ))}
 
@@ -313,26 +415,51 @@ export default function WeeklyPlanner({
                 <div
                   className="absolute left-0.5 right-0.5 rounded z-30 opacity-50 border-2 border-white border-dashed pointer-events-none"
                   style={{
-                    top:            `${minutesToPx(timeToMinutes(ghost.startTime))}px`,
-                    height:         `${Math.max(minutesToPx(timeToMinutes(ghost.endTime)) - minutesToPx(timeToMinutes(ghost.startTime)), 20)}px`,
+                    top:             `${minutesToPx(timeToMinutes(ghost.startTime))}px`,
+                    height:          `${Math.max(minutesToPx(timeToMinutes(ghost.endTime)) - minutesToPx(timeToMinutes(ghost.startTime)), 20)}px`,
                     backgroundColor: dragging.session.training_type?.color || '#3b82f6',
                   }}
                 />
               )}
 
-              {/* Ghost dépôt depuis la bibliothèque */}
+              {/* Ghost dépôt bibliothèque */}
               {showLibGhost && (
                 <div
                   className="absolute left-0.5 right-0.5 rounded z-30 opacity-60 border-2 border-white border-dashed pointer-events-none flex items-start px-1.5 py-1"
                   style={{
-                    top:            `${minutesToPx(timeToMinutes(libGhost.startTime))}px`,
-                    height:         `${Math.max(minutesToPx(timeToMinutes(libGhost.endTime)) - minutesToPx(timeToMinutes(libGhost.startTime)), 20)}px`,
+                    top:             `${minutesToPx(timeToMinutes(libGhost.startTime))}px`,
+                    height:          `${Math.max(minutesToPx(timeToMinutes(libGhost.endTime)) - minutesToPx(timeToMinutes(libGhost.startTime)), 20)}px`,
                     backgroundColor: libDrag.color || '#3b82f6',
                   }}
                 >
                   <span className="text-[10px] text-white font-semibold truncate">{libDrag.title}</span>
                 </div>
               )}
+
+              {/* Ghost redimensionnement */}
+              {showResize && (() => {
+                const session = trainingSessions.find(s => s.id === resizeGhost.sessionId);
+                const color   = session?.training_type?.color || '#3b82f6';
+                const topPx   = minutesToPx(timeToMinutes(resizeGhost.startTime));
+                const botPx   = minutesToPx(timeToMinutes(resizeGhost.endTime));
+                const h       = Math.max(botPx - topPx, 13);
+                return (
+                  <div
+                    className="absolute left-0.5 right-0.5 rounded z-40 pointer-events-none border-2 border-white border-dashed flex flex-col justify-between px-1.5 py-1"
+                    style={{ top: `${topPx}px`, height: `${h}px`, backgroundColor: color, opacity: 0.85 }}
+                  >
+                    {/* Horaires mis à jour en temps réel */}
+                    <span className="text-[9px] text-white font-bold leading-none">
+                      {resizeGhost.startTime.slice(0, 5)}
+                    </span>
+                    {h >= 26 && (
+                      <span className="text-[9px] text-white font-bold leading-none self-end">
+                        {resizeGhost.endTime.slice(0, 5)}
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           );
         })}
@@ -340,7 +467,7 @@ export default function WeeklyPlanner({
 
       {!readOnly && (
         <div className="text-center text-[11px] text-gray-400 py-2 border-t border-gray-100 bg-gray-50">
-          {libDrag ? 'Déposez sur le jour et l\'heure souhaités' : 'Glissez un bloc · Cliquez pour ajouter'}
+          {libDrag ? "Déposez sur le jour et l'heure souhaités" : 'Glissez un bloc · Cliquez pour ajouter'}
         </div>
       )}
     </div>
