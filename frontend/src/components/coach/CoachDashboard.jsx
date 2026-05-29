@@ -10,6 +10,7 @@ import EditTrainingModal from './EditTrainingModal.jsx';
 import ArcherStats from './ArcherStats.jsx';
 import ArcherMessages from './ArcherMessages.jsx';
 import SessionDetailModal from './SessionDetailModal.jsx';
+import SharePlanningModal from './SharePlanningModal.jsx';
 import WelcomeScreen from '../shared/WelcomeScreen.jsx';
 import { usePushSubscription } from '../../hooks/usePushSubscription.js';
 
@@ -26,6 +27,7 @@ export default function CoachDashboard() {
   const [editModal, setEditModal]           = useState(null); // session en cours d'édition
   const [activeTab, setActiveTab]           = useState('planning'); // 'planning' | 'stats' | 'messages'
   const [viewModal, setViewModal]           = useState(null); // session à afficher en détail
+  const [shareOpen, setShareOpen]           = useState(false); // modal partage planning
   const [libDrag, setLibDrag]               = useState(null); // bloc bibliothèque en cours de drag
   const [sidebarOpen, setSidebarOpen]       = useState(true);
   const [loading, setLoading]               = useState(false);
@@ -339,6 +341,17 @@ export default function CoachDashboard() {
             <div className="flex items-center gap-2">
               <WeekPicker weekStart={weekStart} onChange={setWeekStart} />
               <button
+                onClick={() => setShareOpen(true)}
+                disabled={trainingSessions.length === 0}
+                title="Partager ce planning avec d'autres archers"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-blue-700 hover:bg-blue-50 border border-blue-200 transition disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Partager
+              </button>
+              <button
                 onClick={() => {
                   if (selectedArcher) delete cache.current[`${selectedArcher.id}_${weekStart}`];
                   loadWeekData(selectedArcher, weekStart, true);
@@ -439,6 +452,19 @@ export default function CoachDashboard() {
           )}
         </div>
       </main>
+
+      {shareOpen && selectedArcher && (
+        <SharePlanningModal
+          sourceArcher={selectedArcher}
+          weekStart={weekStart}
+          allArchers={archers}
+          onClose={() => setShareOpen(false)}
+          onShared={() => {
+            // Invalide le cache de tous les archers pour cette semaine
+            archers.forEach(a => delete cache.current[`${a.id}_${weekStart}`]);
+          }}
+        />
+      )}
 
       {viewModal && (
         <SessionDetailModal

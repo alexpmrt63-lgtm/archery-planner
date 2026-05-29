@@ -83,6 +83,60 @@ router.put('/:sessionId', requireAuth, requireCoach, async (req, res) => {
   res.json(data);
 });
 
+// Coach : copie le planning d'un archer vers plusieurs autres pour la même semaine
+router.post('/copy', requireAuth, requireCoach, async (req, res) => {
+  const { source_archer_id, week_start, target_archer_ids } = req.body;
+
+  if (!source_archer_id || !week_start || !target_archer_ids?.length) {
+    return res.status(400).json({ error: 'Paramètres manquants' });
+  }
+
+  // Sessions source (sans les IDs — on en crée de nouvelles)
+  const { data: source, error: srcErr } = await supabase
+    .from('training_sessions')
+    .select('day_of_week, start_time, end_time, training_type_id, notes')
+    .eq('archer_id', source_archer_id)
+    .eq('week_start', week_start);
+
+  if (srcErr)       return res.status(500).json({ error: srcErr.message });
+  if (!source?.length) return res.status(400).json({ error: 'Aucune séance à copier pour cette semaine' });
+
+  let copied = 0;
+  for (const targetId of target_archer_ids) {
+    // Remplace les sessions existantes de la semaine pour cet archer cible
+    await supabase
+      .from('training_sessions')
+      .delete()
+      .eq('archer_id', targetId)
+      .eq('week_start', week_start);
+
+    const rows = source.map(s => ({
+      archer_id:        targetId,
+      week_start,
+      day_of_week:      s.day_of_week,
+      start_time:       s.start_time,
+      end_time:         s.end_time,
+      training_type_id: s.training_type_id,
+      notes:            s.notes,
+      coach_id:         req.user.id,
+    }));
+
+    const { error: insErr } = await supabase.from('training_sessions').insert(rows);
+    if (!insErr) {
+      copied++;
+      // Notifie l'archer (fire-and-forget)
+      sendPushToUser(targetId, {
+        title: '🏹 Planning partagé',
+        body:  `${req.user.name} t'a attribué un planning pour la semaine du ${week_start}.`,
+        tag:   `planning-shared-${targetId}-${week_start}`,
+        url:   '/',
+      }).catch(() => {});
+    }
+  }
+
+  res.json({ copied, sessions: source.length });
+});
+
 // Archer OU Coach : met à jour notes/completed/archer_notes (sans changer type ni horaires)
 router.patch('/:sessionId', requireAuth, async (req, res) => {
   const { sessionId } = req.params;
