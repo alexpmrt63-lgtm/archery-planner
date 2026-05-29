@@ -59,7 +59,8 @@ function SlotBlock({ slot, isTraining, onDelete, readOnly }) {
 
 // ── Bloc entraînement draggable + poignées de redimensionnement ───────────────
 function DraggableTraining({ session, readOnly, onDelete, onDragStart, onEdit, onViewSession, onResizeStart }) {
-  const containerRef = useRef(null);
+  const containerRef     = useRef(null);
+  const resizeJustDone   = useRef(false); // bloque le clic parasite après un resize
   const top    = minutesToPx(timeToMinutes(session.start_time));
   const height = Math.max(minutesToPx(timeToMinutes(session.end_time)) - top, 20);
   const color  = session.training_type?.color || '#3b82f6';
@@ -71,7 +72,9 @@ function DraggableTraining({ session, readOnly, onDelete, onDragStart, onEdit, o
   function startResize(edge, e) {
     e.preventDefault();
     e.stopPropagation();
-    // Le parent direct est la colonne jour
+    resizeJustDone.current = true;
+    // On remet le flag à false après la prochaine opportunité d'event
+    setTimeout(() => { resizeJustDone.current = false; }, 300);
     const colEl     = containerRef.current?.parentElement;
     const columnTop = colEl?.getBoundingClientRect().top ?? 0;
     onResizeStart?.(session, edge, columnTop);
@@ -96,7 +99,7 @@ function DraggableTraining({ session, readOnly, onDelete, onDragStart, onEdit, o
       onDrag={() => { dragMoved.current = true; }}
       onClick={e => {
         e.stopPropagation();
-        if (!dragMoved.current) {
+        if (!dragMoved.current && !resizeJustDone.current) {
           if (onViewSession) onViewSession(session);
           else if (!readOnly && onEdit) onEdit(session);
         }
@@ -150,6 +153,7 @@ function DraggableTraining({ session, readOnly, onDelete, onDragStart, onEdit, o
                        flex items-center justify-center"
             style={{ top: '-7px', borderColor: color }}
             onMouseDown={e => startResize('top', e)}
+            onClick={e => e.stopPropagation()}
           >
             <div className="w-1.5 h-0.5 rounded-full bg-gray-400" />
           </div>
@@ -161,6 +165,7 @@ function DraggableTraining({ session, readOnly, onDelete, onDragStart, onEdit, o
                        flex items-center justify-center"
             style={{ bottom: '-7px', borderColor: color }}
             onMouseDown={e => startResize('bottom', e)}
+            onClick={e => e.stopPropagation()}
           >
             <div className="w-1.5 h-0.5 rounded-full bg-gray-400" />
           </div>
