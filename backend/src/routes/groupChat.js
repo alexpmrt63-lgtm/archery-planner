@@ -50,6 +50,7 @@ router.post('/', requireAuth, async (req, res) => {
   res.status(201).json(data);
 
   // Notifie tous les autres utilisateurs (fire-and-forget, rate-limitée)
+  const msgId = data.id;
   (async () => {
     const { data: allUsers } = await supabase
       .from('users')
@@ -62,7 +63,7 @@ router.post('/', requireAuth, async (req, res) => {
     const payload = {
       title: `👥 ${req.user.name}`,
       body,
-      tag:  'group-chat',
+      tag:  `group-chat-${msgId}`,  // tag unique → pas de remplacement
       url:  '/',
     };
 

@@ -251,6 +251,9 @@ export default function WeeklyPlanner({
         resizeJustEndedRef.current = true;
         setTimeout(() => { resizeJustEndedRef.current = false; }, 300);
       }
+      // Restitue le curseur et la sélection normaux
+      document.body.style.cursor     = '';
+      document.body.style.userSelect = '';
       resizingRef.current = null;
       setResizeGhost(null);
     }
@@ -271,6 +274,9 @@ export default function WeeklyPlanner({
       currentStart: session.start_time,
       currentEnd:   session.end_time,
     };
+    // Force le curseur ns-resize globalement pour toute la durée du drag
+    document.body.style.cursor    = 'ns-resize';
+    document.body.style.userSelect = 'none';
     setResizeGhost({
       sessionId: session.id,
       day:       session.day_of_week,

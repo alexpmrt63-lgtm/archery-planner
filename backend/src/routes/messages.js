@@ -76,11 +76,11 @@ router.post('/', requireAuth, async (req, res) => {
   // Réponse immédiate — la notification part en arrière-plan
   res.status(201).json(data);
 
-  // Payload de la notification
+  // Payload de la notification — tag unique par message pour éviter la déduplication
   const payload = {
     title: `💬 ${req.user.name}`,
     body: content.trim(),
-    tag: `message-${archer_id}`,
+    tag: `message-${data.id}`,
     url: '/',
   };
 
