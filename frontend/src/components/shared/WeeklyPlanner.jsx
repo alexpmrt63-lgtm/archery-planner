@@ -196,8 +196,9 @@ export default function WeeklyPlanner({
   const [resizeGhost, setResizeGhost] = useState(null); // ghost redimensionnement
   // { sessionId, day, startTime, endTime }
 
-  const resizingRef = useRef(null);
+  const resizingRef       = useRef(null);
   // { session, edge:'top'|'bottom', columnTop, currentStart, currentEnd }
+  const resizeJustEndedRef = useRef(false); // bloque le clic colonne après un resize
 
   const weekDates  = DAYS.map((_, i) => addDays(parseISO(weekStart), i));
   const colTemplate = `48px repeat(${DAYS.length}, ${dayColWidth ? `${dayColWidth}px` : '1fr'})`;
@@ -233,12 +234,17 @@ export default function WeeklyPlanner({
 
     function onMouseUp() {
       const r = resizingRef.current;
-      if (r && (r.currentStart !== r.session.start_time || r.currentEnd !== r.session.end_time)) {
-        onMoveTraining?.(r.session.id, {
-          day_of_week: r.session.day_of_week,
-          start_time:  r.currentStart,
-          end_time:    r.currentEnd,
-        });
+      if (r) {
+        if (r.currentStart !== r.session.start_time || r.currentEnd !== r.session.end_time) {
+          onMoveTraining?.(r.session.id, {
+            day_of_week: r.session.day_of_week,
+            start_time:  r.currentStart,
+            end_time:    r.currentEnd,
+          });
+        }
+        // Bloque le clic colonne parasite qui suit immédiatement le mouseup
+        resizeJustEndedRef.current = true;
+        setTimeout(() => { resizeJustEndedRef.current = false; }, 300);
       }
       resizingRef.current = null;
       setResizeGhost(null);
@@ -270,7 +276,7 @@ export default function WeeklyPlanner({
 
   // ── Clic pour ajouter ────────────────────────────────────────────────────
   function handleColumnClick(e, dayIndex) {
-    if (readOnly || !onAddTraining || libDrag || resizingRef.current) return;
+    if (readOnly || !onAddTraining || libDrag || resizingRef.current || resizeJustEndedRef.current) return;
     const rect      = e.currentTarget.getBoundingClientRect();
     const startTime = pxToTime(e.clientY - rect.top);
     onAddTraining({ day: dayIndex + 1, startTime });
