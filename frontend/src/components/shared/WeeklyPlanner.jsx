@@ -8,7 +8,7 @@ const END_HOUR    = 23;   // grille jusqu'à 23h, sessions limitées à 22h30
 const END_MINUTES = 22 * 60 + 30; // 22:30 — borne max de placement
 const HOURS       = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => i + START_HOUR);
 const CELL_HEIGHT = 52; // px par heure
-const MIN_DURATION = 15; // durée minimale en minutes
+const MIN_DURATION = 5; // durée minimale en minutes
 
 function timeToMinutes(time) {
   const [h, m] = time.split(':').map(Number);
@@ -25,7 +25,7 @@ function minutesToTime(min) {
 }
 
 function pxToTime(px) {
-  const totalMinutes = Math.round((px / CELL_HEIGHT) * 60 / 15) * 15 + START_HOUR * 60;
+  const totalMinutes = Math.round((px / CELL_HEIGHT) * 60 / 5) * 5 + START_HOUR * 60;
   return minutesToTime(totalMinutes);
 }
 
