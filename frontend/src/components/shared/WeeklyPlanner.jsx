@@ -49,12 +49,17 @@ function SlotBlock({ slot, isTraining, onDelete, readOnly }) {
       style={{ top: `${top}px`, height: `${height}px`, ...(color ? { backgroundColor: color } : {}) }}
       onClick={e => e.stopPropagation()}
     >
-      <div className="flex items-start justify-between h-full px-1 py-0.5 gap-0.5">
+      <div className="flex flex-col h-full px-1 py-0.5 gap-px overflow-hidden">
         <span className="text-[10px] leading-tight font-medium truncate">{label}</span>
+        {height >= 28 && (
+          <span className="text-[9px] leading-tight opacity-75 font-medium shrink-0">
+            {slot.start_time.slice(0, 5)} – {slot.end_time.slice(0, 5)}
+          </span>
+        )}
         {!readOnly && isTraining && onDelete && height >= 24 && (
           <button
             onClick={e => { e.stopPropagation(); onDelete(slot.id); }}
-            className="text-[10px] leading-none opacity-70 hover:opacity-100 shrink-0"
+            className="text-[10px] leading-none opacity-70 hover:opacity-100 shrink-0 mt-auto self-end"
           >✕</button>
         )}
       </div>
