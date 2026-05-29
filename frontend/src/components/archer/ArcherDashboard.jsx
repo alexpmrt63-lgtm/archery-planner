@@ -8,6 +8,7 @@ import WeekPicker from '../shared/WeekPicker.jsx';
 import WelcomeScreen from '../shared/WelcomeScreen.jsx';
 import ArcherMessages from '../coach/ArcherMessages.jsx';
 import SessionDetailModal from '../coach/SessionDetailModal.jsx';
+import GroupChat from '../shared/GroupChat.jsx';
 import { usePushSubscription } from '../../hooks/usePushSubscription.js';
 
 const REFRESH_INTERVAL = 30_000;
@@ -122,7 +123,8 @@ export default function ArcherDashboard() {
     { id: 'accueil',  icon: '🏠', label: 'Accueil',  shortLabel: 'Accueil'  },
     { id: 'planning', icon: '📅', label: 'Planning', shortLabel: 'Planning' },
     { id: 'upload',   icon: '📷', label: 'EDT',      shortLabel: 'EDT'      },
-    { id: 'messages', icon: '💬', label: 'Messages', shortLabel: 'Messages' },
+    { id: 'messages', icon: '💬', label: 'Messages', shortLabel: 'Privé'    },
+    { id: 'groupe',   icon: '👥', label: 'Groupe',   shortLabel: 'Groupe'   },
   ];
 
   return (
@@ -248,10 +250,17 @@ export default function ArcherDashboard() {
           </div>
         )}
 
-        {/* Messages */}
+        {/* Messages privés (coach ↔ archer) */}
         {tab === 'messages' && (
           <div className="flex-1 overflow-hidden">
             <ArcherMessages archer={user} />
+          </div>
+        )}
+
+        {/* Chat de groupe */}
+        {tab === 'groupe' && (
+          <div className="flex-1 overflow-hidden">
+            <GroupChat currentUser={user} />
           </div>
         )}
 

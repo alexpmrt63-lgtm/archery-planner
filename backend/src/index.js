@@ -10,6 +10,7 @@ import statsRoutes    from './routes/stats.js';
 import pushRoutes     from './routes/push.js';
 import commentsRoutes  from './routes/comments.js';
 import messagesRoutes  from './routes/messages.js';
+import groupChatRoutes from './routes/groupChat.js';
 
 const app = express();
 
@@ -36,7 +37,8 @@ app.use('/api/training-types', trainingTypesRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/push',     pushRoutes);
 app.use('/api/comments', commentsRoutes);
-app.use('/api/messages', messagesRoutes);
+app.use('/api/messages',    messagesRoutes);
+app.use('/api/group-chat', groupChatRoutes);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 

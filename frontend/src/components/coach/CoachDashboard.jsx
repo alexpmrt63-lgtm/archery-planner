@@ -12,6 +12,7 @@ import ArcherMessages from './ArcherMessages.jsx';
 import SessionDetailModal from './SessionDetailModal.jsx';
 import SharePlanningModal from './SharePlanningModal.jsx';
 import WelcomeScreen from '../shared/WelcomeScreen.jsx';
+import GroupChat from '../shared/GroupChat.jsx';
 import { usePushSubscription } from '../../hooks/usePushSubscription.js';
 
 export default function CoachDashboard() {
@@ -314,9 +315,21 @@ export default function CoachDashboard() {
           </div>
         )}
 
-        <div className="p-4 border-t border-blue-800">
-          {sidebarOpen && <div className="text-xs text-blue-300 mb-2 truncate">{user?.name}</div>}
-          <button onClick={logout} className="text-xs text-blue-400 hover:text-white transition">
+        <div className="p-4 border-t border-blue-800 space-y-2">
+          {sidebarOpen && <div className="text-xs text-blue-300 truncate">{user?.name}</div>}
+          {/* Chat de groupe */}
+          <button
+            onClick={() => setActiveTab('groupe')}
+            className={`w-full flex items-center gap-2 text-xs px-2 py-1.5 rounded-lg transition ${
+              activeTab === 'groupe'
+                ? 'bg-blue-700 text-white font-semibold'
+                : 'text-blue-400 hover:text-white hover:bg-blue-800'
+            }`}
+          >
+            <span className="text-base leading-none shrink-0">👥</span>
+            {sidebarOpen && 'Chat de groupe'}
+          </button>
+          <button onClick={logout} className="text-xs text-blue-400 hover:text-white transition block">
             {sidebarOpen ? 'Se déconnecter' : '⎋'}
           </button>
         </div>
@@ -368,7 +381,12 @@ export default function CoachDashboard() {
         </header>
 
         <div className="flex-1 flex overflow-hidden">
-          {selectedArcher ? (
+          {activeTab === 'groupe' ? (
+            /* ── Chat de groupe (indépendant de l'archer sélectionné) ── */
+            <div className="flex-1 overflow-hidden">
+              <GroupChat currentUser={user} />
+            </div>
+          ) : selectedArcher ? (
             <>
               <div className="flex-1 flex flex-col overflow-hidden">
                 {/* Onglets */}
