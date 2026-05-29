@@ -128,7 +128,7 @@ export default function ArcherDashboard() {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-50 flex-col">
+    <div className="flex bg-gray-50 flex-col" style={{ height: '100dvh' }}>
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <header className="bg-white border-b border-gray-200 px-3 sm:px-6 py-2 sm:py-3 flex items-center justify-between gap-2 shrink-0">
