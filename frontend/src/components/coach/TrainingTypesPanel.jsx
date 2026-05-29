@@ -152,7 +152,7 @@ export default function TrainingTypesPanel({ types, onUpdate, onLibDragStart, on
         )}
 
         <div className="flex flex-col gap-1">
-          {types.map(t => (
+          {[...types].sort((a, b) => a.color.localeCompare(b.color)).map(t => (
             <LibraryBlock
               key={t.id}
               type={t}
