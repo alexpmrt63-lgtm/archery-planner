@@ -373,7 +373,7 @@ export default function ArcherDashboard() {
                     <p className="text-sm font-medium text-gray-700">{uploading ? 'Analyse en cours…' : 'Appuyez pour choisir une image'}</p>
                     <p className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP — max 8 Mo</p>
                   </div>
-                  <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handleUpload} disabled={uploading} />
+                  <input type="file" accept="image/*" className="hidden" onChange={handleUpload} disabled={uploading} />
                 </label>
                 {uploading && (
                   <div className="flex items-center gap-2 text-sm text-blue-700">
