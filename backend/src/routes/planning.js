@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import supabase from '../supabase.js';
 import { requireAuth, requireCoach } from '../middleware/auth.js';
-import { sendPushToUser } from '../utils/webpush.js';
+import { sendPushToUser, sendPushToAllCoaches } from '../utils/webpush.js';
 
 const router = Router();
 
@@ -105,6 +105,18 @@ router.patch('/:sessionId', requireAuth, async (req, res) => {
       .select('*, training_type:training_type_id(title, color)')
       .single();
     if (error) return res.status(500).json({ error: error.message });
+
+    // Notifie tous les coachs qu'un archer a commenté une séance
+    if (archer_notes?.trim()) {
+      const sessionTitle = data.training_type?.title || 'une séance';
+      sendPushToAllCoaches({
+        title: `✏️ Commentaire de ${req.user.name}`,
+        body:  `${req.user.name} a commenté "${sessionTitle}" : ${archer_notes.trim()}`,
+        tag:   `archer-comment-${sessionId}`,
+        url:   '/',
+      }).catch(() => {});
+    }
+
     return res.json(data);
   }
 
