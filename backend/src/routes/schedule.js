@@ -138,6 +138,30 @@ Heures au format HH:MM. Si tu ne vois pas d'emploi du temps clair, renvoie {"slo
   res.json({ slots, image_path: filePath, comment: comment || null });
 });
 
+// Archer : crée un créneau personnel (type='perso') sans image
+router.post('/manual', requireAuth, async (req, res) => {
+  if (req.user.role !== 'archer') return res.status(403).json({ error: 'Réservé aux archers' });
+  const { week_start, day_of_week, start_time, end_time, label } = req.body;
+  if (!week_start || !day_of_week || !start_time || !end_time) {
+    return res.status(400).json({ error: 'Paramètres manquants' });
+  }
+  const { data, error } = await supabase
+    .from('schedule_slots')
+    .insert({
+      archer_id:   req.user.id,
+      week_start,
+      day_of_week: Number(day_of_week),
+      start_time,
+      end_time,
+      label:       label?.trim() || 'Indisponible',
+      type:        'perso',
+    })
+    .select()
+    .single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json(data);
+});
+
 // Récupère le commentaire d'un archer pour une semaine (coach + archer)
 router.get('/comment/:archerId/:weekStart', requireAuth, async (req, res) => {
   const { archerId, weekStart } = req.params;
