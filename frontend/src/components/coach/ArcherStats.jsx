@@ -17,7 +17,7 @@ const PERIODS = [
   { label: 'Tout',          weeks: null        },
 ];
 
-const DAYS_FR = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+const DAYS_FR = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
 function formatHours(minutes) {
   if (!minutes) return '0h';
@@ -283,7 +283,7 @@ export default function ArcherStats({ archer, weekStart }) {
         />
         <KpiCard
           label="Jours actifs"
-          value={`${activeDays}/6`}
+          value={`${activeDays}/7`}
           sub={topType ? `Surtout : ${topType.title}` : 'aucune séance'}
         />
       </div>

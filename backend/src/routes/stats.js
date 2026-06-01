@@ -58,11 +58,11 @@ router.get('/:archerId', requireAuth, requireCoach, async (req, res) => {
     .map(([week_start, minutes]) => ({ week_start, minutes }))
     .sort((a, b) => a.week_start.localeCompare(b.week_start));
 
-  // ── Par jour de semaine (1=Lun … 6=Sam) ─────────────────────
-  const dayArr = Array(6).fill(0);
+  // ── Par jour de semaine (1=Lun … 7=Dim) ─────────────────────
+  const dayArr = Array(7).fill(0);
   data.forEach(r => {
     const idx = r.day_of_week - 1;
-    if (idx >= 0 && idx < 6) dayArr[idx] += sessionDuration(r);
+    if (idx >= 0 && idx < 7) dayArr[idx] += sessionDuration(r);
   });
   const byDay = dayArr.map((minutes, i) => ({ day: i + 1, minutes }));
 
