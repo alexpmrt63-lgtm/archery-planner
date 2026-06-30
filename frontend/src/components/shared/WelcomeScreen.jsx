@@ -32,7 +32,7 @@ const POLE_QUOTES = [
     img: "/pole/kharchouf.jpg",
   },
   {
-    quote:  "La confiance c'est ce que tu accordes à ce que tu sais déjà faire, et c'est ce que tu génères en faisant.",
+    quote:  "La confiance c'est ce que tu accordes à ce que tu sais déjà faire, et c'est ce que tu génères en le faisant.",
     author: "Gilles Topandé-Makombo", role: "Archer",
     img: "/pole/gilles.jpg",
   },
