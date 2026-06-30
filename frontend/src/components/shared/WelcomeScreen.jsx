@@ -195,6 +195,31 @@ const QUOTES = [
     author: "Usain Bolt", sport: "Sprint 💨",
     img: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Usain_Bolt_smiling_Berlin_2009.JPG/330px-Usain_Bolt_smiling_Berlin_2009.JPG",
   },
+  {
+    quote:  "Seuls les disciplinés sont libres dans la vie.",
+    author: "Eliud Kipchoge", sport: "Marathon 🏃",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Eliud_Kipchoge_2015_Berlin_Marathon.jpg/330px-Eliud_Kipchoge_2015_Berlin_Marathon.jpg",
+  },
+  {
+    quote:  "Je voulais tous les gagner. Quand on y a goûté, c'est une addiction.",
+    author: "Eileen Gu", sport: "Ski freestyle 🎿",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Eileen_Gu_2022_Winter_Olympics.jpg/330px-Eileen_Gu_2022_Winter_Olympics.jpg",
+  },
+  {
+    quote:  "Dans le sport, il n'y a pas de limite d'âge. Si tu le veux, tu peux le faire.",
+    author: "Hidilyn Díaz", sport: "Haltérophilie 🏋️",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Hidilyn_Diaz_at_2020_Summer_Olympics.jpg/330px-Hidilyn_Diaz_at_2020_Summer_Olympics.jpg",
+  },
+  {
+    quote:  "L'effort peut trahir, mais il ne sera jamais vain.",
+    author: "Yuzuru Hanyu", sport: "Patinage artistique ⛸️",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Yuzuru_Hanyu_2018_Olympics.jpg/330px-Yuzuru_Hanyu_2018_Olympics.jpg",
+  },
+  {
+    quote:  "La pression est un privilège.",
+    author: "Mondo Duplantis", sport: "Saut à la perche 🏅",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Armand_Duplantis_2022_World_Championships.jpg/330px-Armand_Duplantis_2022_World_Championships.jpg",
+  },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
