@@ -41,29 +41,12 @@ export default function CoachDashboard() {
   const activeKeyRef = useRef(null); // empêche les réponses tardives d'écraser la vue courante
 
   // ── Notification "planning terminé" ──────────────────────────────────────
-  // Suit l'archer précédent et si des modifications ont eu lieu.
-  // Quand le coach change d'archer, une seule notif est envoyée à l'ancien.
-  const prevArcherRef    = useRef(null);   // archer précédemment sélectionné
-  const pendingNotifRef  = useRef(false);  // true si une modif a eu lieu sur cet archer
-
-  function markPlanningChanged() {
-    pendingNotifRef.current = true;
-  }
-
   useEffect(() => {
     api.get('/archers').then(r => setArchers(r.data));
     api.get('/training-types').then(r => setTrainingTypes(r.data));
   }, []);
 
-  // Envoie la notification à l'archer précédent quand le coach change d'archer
-  useEffect(() => {
-    const prev = prevArcherRef.current;
-    if (prev && pendingNotifRef.current && prev.id !== selectedArcher?.id) {
-      api.post(`/planning/notify/${prev.id}`).catch(() => {});
-    }
-    prevArcherRef.current   = selectedArcher;
-    pendingNotifRef.current = false; // reset pour le nouvel archer
-  }, [selectedArcher]); // eslint-disable-line react-hooks/exhaustive-deps
+  function markPlanningChanged() {}
 
   // Recale sur la semaine courante si la page reste ouverte de nuit
   useEffect(() => {
