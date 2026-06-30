@@ -220,6 +220,21 @@ const QUOTES = [
     author: "Mondo Duplantis", sport: "Saut à la perche 🏅",
     img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Armand_Duplantis_2022_World_Championships.jpg/330px-Armand_Duplantis_2022_World_Championships.jpg",
   },
+  {
+    quote:  "Je ne suis pas la prochaine Usain Bolt, je suis la première Simone Biles.",
+    author: "Simone Biles", sport: "Gymnastique 🤸",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Simone_Biles_National_Team_2024.jpg/330px-Simone_Biles_National_Team_2024.jpg",
+  },
+  {
+    quote:  "Si tu veux être le meilleur, tu dois faire ce que les autres ne sont pas prêts à faire.",
+    author: "Michael Phelps", sport: "Natation 🏊",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Michael_Phelps_Rio_Olympics_2016.jpg/330px-Michael_Phelps_Rio_Olympics_2016.jpg",
+  },
+  {
+    quote:  "Il faut pleurer au début pour pouvoir sourire à la fin.",
+    author: "Marta", sport: "Football ⚽",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Marta_Vieira_da_Silva_%282024%29.jpg/330px-Marta_Vieira_da_Silva_%282024%29.jpg",
+  },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
