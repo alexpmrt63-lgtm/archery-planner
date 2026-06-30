@@ -10,6 +10,7 @@ import ArcherMessages from '../coach/ArcherMessages.jsx';
 import SessionDetailModal from '../coach/SessionDetailModal.jsx';
 import GroupChat from '../shared/GroupChat.jsx';
 import { usePushSubscription } from '../../hooks/usePushSubscription.js';
+import NotificationBanner from '../shared/NotificationBanner.jsx';
 
 const REFRESH_INTERVAL = 30_000;
 
@@ -19,7 +20,7 @@ function currentMonday() {
 
 export default function ArcherDashboard() {
   const { user, logout } = useAuthContext();
-  usePushSubscription();
+  const { needsPrompt, enableNotifications, dismissBanner } = usePushSubscription();
 
   const [weekStart, setWeekStart]             = useState(currentMonday());
   const [uploadWeekStart, setUploadWeekStart] = useState(currentMonday());
@@ -533,6 +534,9 @@ export default function ArcherDashboard() {
             setViewSession(null);
           }}
         />
+      )}
+      {needsPrompt && (
+        <NotificationBanner onEnable={enableNotifications} onDismiss={dismissBanner} />
       )}
     </div>
   );

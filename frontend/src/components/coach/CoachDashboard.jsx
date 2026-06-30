@@ -14,10 +14,11 @@ import SharePlanningModal from './SharePlanningModal.jsx';
 import WelcomeScreen from '../shared/WelcomeScreen.jsx';
 import GroupChat from '../shared/GroupChat.jsx';
 import { usePushSubscription } from '../../hooks/usePushSubscription.js';
+import NotificationBanner from '../shared/NotificationBanner.jsx';
 
 export default function CoachDashboard() {
   const { user, logout } = useAuthContext();
-  usePushSubscription(); // abonnement aux notifications push
+  const { needsPrompt, enableNotifications, dismissBanner } = usePushSubscription();
   const [archers, setArchers]               = useState([]);
   const [selectedArcher, setSelectedArcher] = useState(null);
   const [weekStart, setWeekStart]           = useState(format(startOfISOWeek(new Date()), 'yyyy-MM-dd'));
@@ -524,6 +525,9 @@ export default function CoachDashboard() {
           onDelete={id => { handleDeleteTraining(id); setEditModal(null); }}
           onClose={() => setEditModal(null)}
         />
+      )}
+      {needsPrompt && (
+        <NotificationBanner onEnable={enableNotifications} onDismiss={dismissBanner} />
       )}
     </div>
   );
