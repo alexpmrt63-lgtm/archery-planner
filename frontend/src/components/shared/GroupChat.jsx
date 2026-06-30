@@ -62,6 +62,7 @@ export default function GroupChat({ currentUser }) {
     if (!text || sending) return;
     setSending(true);
     setContent('');
+    if (inputRef.current) inputRef.current.style.height = 'auto';
     try {
       const { data } = await api.post('/group-chat', { content: text });
       setMessages(prev => [...prev, data]);
@@ -172,14 +173,22 @@ export default function GroupChat({ currentUser }) {
         onSubmit={handleSend}
         className="bg-white border-t border-gray-200 px-3 sm:px-4 py-3 flex gap-2 shrink-0"
       >
-        <input
+        <textarea
           ref={inputRef}
-          type="text"
+          rows={1}
           value={content}
           onChange={e => setContent(e.target.value)}
+          onInput={e => {
+            e.target.style.height = 'auto';
+            e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+          }}
+          onKeyDown={e => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(e); }
+          }}
           placeholder="Écrire un message au groupe…"
           disabled={sending}
-          className="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent disabled:opacity-50 transition"
+          className="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent disabled:opacity-50 transition resize-none overflow-hidden leading-6"
+          style={{ minHeight: '42px', maxHeight: '120px' }}
         />
         <button
           type="submit"
