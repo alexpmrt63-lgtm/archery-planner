@@ -9,6 +9,35 @@ const WORD_COLORS = {
   audace:       { text: 'text-rose-600',   bg: 'bg-rose-50'   },
 };
 
+// ── Citations Pôle France Relève (photos à venir) ────────────────────────────
+const POLE_QUOTES = [
+  {
+    quote:  "La confiance s'acquiert en goutte et se perd en litre.",
+    author: "Pierre Mouton", role: "Coach",
+    img: null,
+  },
+  {
+    quote:  "La réussite se compte en années et les défaites en heures.",
+    author: "Maël Lamouret", role: "Archer",
+    img: null,
+  },
+  {
+    quote:  "Tu sais qu'on ne peut toucher au but qu'après s'être fait transformer par le voyage.",
+    author: "Maël Kharchouf", role: "Archer",
+    img: null,
+  },
+  {
+    quote:  "Entre l'envie et le regret il y a un point qui s'appelle le présent.",
+    author: "Maël Kharchouf", role: "Archer",
+    img: null,
+  },
+  {
+    quote:  "La confiance c'est ce que tu accordes à ce que tu sais déjà faire, et c'est ce que tu génères en faisant.",
+    author: "Gilles Topandé-Makombo", role: "Archer",
+    img: null,
+  },
+];
+
 // ── 30 citations de sportifs — photos Wikipedia Commons ──────────────────────
 const QUOTES = [
   {
@@ -163,6 +192,9 @@ const QUOTES = [
   },
 ];
 
+// Pool complet : citations Pôle en premier pour qu'elles apparaissent souvent
+const ALL_QUOTES = [...POLE_QUOTES, ...QUOTES];
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function randomOther(current, max) {
@@ -177,16 +209,19 @@ export default function WelcomeScreen({ userName, role = 'coach' }) {
   const [word] = useState(() => WORDS[Math.floor(Math.random() * WORDS.length)]);
   const [quoteIdx, setQuoteIdx] = useState(() => {
     const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86_400_000);
-    return dayOfYear % QUOTES.length;
+    return dayOfYear % ALL_QUOTES.length;
   });
   const [imgError, setImgError] = useState(false);
 
   const firstName = userName?.split(' ')[0] ?? userName ?? '';
-  const { quote, author, sport, img } = QUOTES[quoteIdx];
-  const colors = WORD_COLORS[word] ?? WORD_COLORS.ambition;
+  const current   = ALL_QUOTES[quoteIdx];
+  const isPole    = 'role' in current;            // true pour les citations Pôle
+  const { quote, author, img } = current;
+  const sport     = isPole ? null : current.sport;
+  const colors    = WORD_COLORS[word] ?? WORD_COLORS.ambition;
 
   function handleNextQuote() {
-    setQuoteIdx(i => randomOther(i, QUOTES.length));
+    setQuoteIdx(i => randomOther(i, ALL_QUOTES.length));
     setImgError(false);
   }
 
@@ -210,12 +245,14 @@ export default function WelcomeScreen({ userName, role = 'coach' }) {
       </div>
 
       {/* ── Carte citation ────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden max-w-xl w-full">
+      <div className={`bg-white rounded-2xl border shadow-sm overflow-hidden max-w-xl w-full ${
+        isPole ? 'border-blue-200 ring-1 ring-blue-100' : 'border-gray-200'
+      }`}>
 
         {/* En-tête */}
-        <div className="px-6 pt-5 pb-3">
+        <div className={`px-6 pt-5 pb-3 ${isPole ? 'bg-gradient-to-r from-blue-50 to-white' : ''}`}>
           <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
-            💬 Citation sportive du jour
+            {isPole ? '🏹 Parole du Pôle France Relève' : '💬 Citation sportive du jour'}
           </p>
         </div>
 
@@ -224,8 +261,10 @@ export default function WelcomeScreen({ userName, role = 'coach' }) {
 
           {/* Photo */}
           <div className="shrink-0 w-24 h-28 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center border border-gray-200">
-            {imgError ? (
-              <span className="text-4xl select-none">{sport.split(' ').pop()}</span>
+            {(!img || imgError) ? (
+              <span className="text-4xl select-none">
+                {isPole ? '🏹' : sport?.split(' ').pop()}
+              </span>
             ) : (
               <img
                 src={img}
@@ -238,10 +277,16 @@ export default function WelcomeScreen({ userName, role = 'coach' }) {
 
           {/* Texte */}
           <div className="flex-1 min-w-0 text-left">
-            {/* Badge sport */}
-            <span className={`inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-3 ${colors.bg} ${colors.text}`}>
-              {sport}
-            </span>
+            {/* Badge */}
+            {isPole ? (
+              <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-3 bg-blue-100 text-blue-700">
+                🏹 Pôle France Relève
+              </span>
+            ) : (
+              <span className={`inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-3 ${colors.bg} ${colors.text}`}>
+                {sport}
+              </span>
+            )}
 
             {/* Guillemet décoratif */}
             <blockquote className="text-gray-800 text-sm leading-relaxed italic mb-3 relative">
@@ -249,7 +294,12 @@ export default function WelcomeScreen({ userName, role = 'coach' }) {
               <span className="pl-4">{quote}</span>
             </blockquote>
 
-            <p className="text-xs font-bold text-gray-500">— {author}</p>
+            <p className="text-xs font-bold text-gray-500">
+              — {author}
+              {isPole && current.role && (
+                <span className="ml-1.5 font-normal text-gray-400">· {current.role}</span>
+              )}
+            </p>
           </div>
         </div>
 
