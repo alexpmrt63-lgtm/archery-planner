@@ -9,32 +9,37 @@ const WORD_COLORS = {
   audace:       { text: 'text-rose-600',   bg: 'bg-rose-50'   },
 };
 
-// ── Citations Pôle France Relève (photos à venir) ────────────────────────────
+// ── Citations Pôle France Relève ─────────────────────────────────────────────
 const POLE_QUOTES = [
   {
     quote:  "La confiance s'acquiert en goutte et se perd en litre.",
     author: "Pierre Mouton", role: "Coach",
-    img: null,
+    img: "/pole/pierre.jpg",
   },
   {
     quote:  "La réussite se compte en années et les défaites en heures.",
     author: "Maël Lamouret", role: "Archer",
-    img: null,
+    img: "/pole/lamouret.jpg",
   },
   {
     quote:  "Tu sais qu'on ne peut toucher au but qu'après s'être fait transformer par le voyage.",
     author: "Maël Kharchouf", role: "Archer",
-    img: null,
+    img: "/pole/kharchouf.jpg",
   },
   {
     quote:  "Entre l'envie et le regret il y a un point qui s'appelle le présent.",
     author: "Maël Kharchouf", role: "Archer",
-    img: null,
+    img: "/pole/kharchouf.jpg",
   },
   {
     quote:  "La confiance c'est ce que tu accordes à ce que tu sais déjà faire, et c'est ce que tu génères en faisant.",
     author: "Gilles Topandé-Makombo", role: "Archer",
-    img: null,
+    img: "/pole/gilles.jpg",
+  },
+  {
+    quote:  "J'ai fait de mon mieux mais mon mieux c'est de la merde.",
+    author: "Siham Er'rahmouni", role: "Archer",
+    img: "/pole/siham.jpg",
   },
 ];
 
@@ -192,9 +197,6 @@ const QUOTES = [
   },
 ];
 
-// Pool complet : citations Pôle en premier pour qu'elles apparaissent souvent
-const ALL_QUOTES = [...POLE_QUOTES, ...QUOTES];
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function randomOther(current, max) {
@@ -207,21 +209,27 @@ function randomOther(current, max) {
 
 export default function WelcomeScreen({ userName, role = 'coach' }) {
   const [word] = useState(() => WORDS[Math.floor(Math.random() * WORDS.length)]);
-  const [quoteIdx, setQuoteIdx] = useState(() => {
+  // 50/50 : showPole détermine le pool, chaque index est indépendant
+  const [showPole, setShowPole]     = useState(() => Math.random() < 0.5);
+  const [poleIdx,  setPoleIdx]      = useState(() => Math.floor(Math.random() * POLE_QUOTES.length));
+  const [sportsIdx, setSportsIdx]   = useState(() => {
     const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86_400_000);
-    return dayOfYear % ALL_QUOTES.length;
+    return dayOfYear % QUOTES.length;
   });
   const [imgError, setImgError] = useState(false);
 
   const firstName = userName?.split(' ')[0] ?? userName ?? '';
-  const current   = ALL_QUOTES[quoteIdx];
-  const isPole    = 'role' in current;            // true pour les citations Pôle
+  const isPole    = showPole;
+  const current   = isPole ? POLE_QUOTES[poleIdx] : QUOTES[sportsIdx];
   const { quote, author, img } = current;
   const sport     = isPole ? null : current.sport;
   const colors    = WORD_COLORS[word] ?? WORD_COLORS.ambition;
 
   function handleNextQuote() {
-    setQuoteIdx(i => randomOther(i, ALL_QUOTES.length));
+    const nextIsPole = Math.random() < 0.5;
+    setShowPole(nextIsPole);
+    if (nextIsPole) setPoleIdx(i => randomOther(i, POLE_QUOTES.length));
+    else            setSportsIdx(i => randomOther(i, QUOTES.length));
     setImgError(false);
   }
 
