@@ -198,27 +198,27 @@ const QUOTES = [
   {
     quote:  "Seuls les disciplinés sont libres dans la vie.",
     author: "Eliud Kipchoge", sport: "Marathon 🏃",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Eliud_Kipchoge_2015_Berlin_Marathon.jpg/330px-Eliud_Kipchoge_2015_Berlin_Marathon.jpg",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Eliud_Kipchoge_in_Berlin_-_2015_%28cropped%29.jpg/330px-Eliud_Kipchoge_in_Berlin_-_2015_%28cropped%29.jpg",
   },
   {
     quote:  "Je voulais tous les gagner. Quand on y a goûté, c'est une addiction.",
     author: "Eileen Gu", sport: "Ski freestyle 🎿",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Eileen_Gu_2022_Winter_Olympics.jpg/330px-Eileen_Gu_2022_Winter_Olympics.jpg",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/%E8%B0%B7%E7%88%B1%E5%87%8C%E4%BA%8E2023-24%E8%B5%9B%E5%AD%A3%E5%9B%BD%E9%99%85%E9%9B%AA%E8%81%94U%E5%9E%8B%E5%9C%BA%E5%9C%B0%E4%B8%96%E7%95%8C%E6%9D%AF%E4%BA%91%E9%A1%B6%E7%AB%99%E6%AF%94%E8%B5%9B%E5%A4%BA%E5%86%A0.png/330px-%E8%B0%B7%E7%88%B1%E5%87%8C%E4%BA%8E2023-24%E8%B5%9B%E5%AD%A3%E5%9B%BD%E9%99%85%E9%9B%AA%E8%81%94U%E5%9E%8B%E5%9C%BA%E5%9C%B0%E4%B8%96%E7%95%8C%E6%9D%AF%E4%BA%91%E9%A1%B6%E7%AB%99%E6%AF%94%E8%B5%9B%E5%A4%BA%E5%86%A0.png",
   },
   {
     quote:  "Dans le sport, il n'y a pas de limite d'âge. Si tu le veux, tu peux le faire.",
     author: "Hidilyn Díaz", sport: "Haltérophilie 🏋️",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Hidilyn_Diaz_at_2020_Summer_Olympics.jpg/330px-Hidilyn_Diaz_at_2020_Summer_Olympics.jpg",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Hidilyn_Diaz_with_her_gold_medal_2021_%281-44_screenshot%29.jpg/330px-Hidilyn_Diaz_with_her_gold_medal_2021_%281-44_screenshot%29.jpg",
   },
   {
     quote:  "L'effort peut trahir, mais il ne sera jamais vain.",
     author: "Yuzuru Hanyu", sport: "Patinage artistique ⛸️",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Yuzuru_Hanyu_2018_Olympics.jpg/330px-Yuzuru_Hanyu_2018_Olympics.jpg",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/2018_Winter_Olympics_-_Yuzuru_Hanyu_%28cropped%29.jpg/330px-2018_Winter_Olympics_-_Yuzuru_Hanyu_%28cropped%29.jpg",
   },
   {
     quote:  "La pression est un privilège.",
     author: "Mondo Duplantis", sport: "Saut à la perche 🏅",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Armand_Duplantis_2022_World_Championships.jpg/330px-Armand_Duplantis_2022_World_Championships.jpg",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Armand_Duplantis%28cropped%29_Budapest_2023.jpg/330px-Armand_Duplantis%28cropped%29_Budapest_2023.jpg",
   },
   {
     quote:  "Je ne suis pas la prochaine Usain Bolt, je suis la première Simone Biles.",
@@ -233,7 +233,7 @@ const QUOTES = [
   {
     quote:  "Il faut pleurer au début pour pouvoir sourire à la fin.",
     author: "Marta", sport: "Football ⚽",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Marta_Vieira_da_Silva_%282024%29.jpg/330px-Marta_Vieira_da_Silva_%282024%29.jpg",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/NC_Courage_vs_Orlando_Pride_%28Jun_2024%29_073_%28cropped%29.jpg/330px-NC_Courage_vs_Orlando_Pride_%28Jun_2024%29_073_%28cropped%29.jpg",
   },
 ];
 
