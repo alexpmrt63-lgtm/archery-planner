@@ -13,7 +13,7 @@ const WORD_COLORS = {
 const POLE_QUOTES = [
   {
     quote:  "La confiance s'acquiert en goutte et se perd en litre.",
-    author: "Pierre Mouton", role: "Coach",
+    author: "Pierre Mouton", role: "Archer",
     img: "/pole/pierre.jpg",
   },
   {
@@ -33,7 +33,7 @@ const POLE_QUOTES = [
   },
   {
     quote:  "La confiance c'est ce que tu accordes à ce que tu sais déjà faire, et c'est ce que tu génères en le faisant.",
-    author: "Gilles Topandé-Makombo", role: "Archer",
+    author: "Gilles Topandé-Makombo", role: "Coach",
     img: "/pole/gilles.jpg",
   },
   {
