@@ -465,11 +465,9 @@ export default function CoachDashboard() {
                     <ArcherStats archer={selectedArcher} weekStart={weekStart} />
                   </div>
                 )}
-                {activeTab === 'messages' && (
-                  <div className="flex-1 overflow-hidden">
-                    <ArcherMessages archer={selectedArcher} />
-                  </div>
-                )}
+                <div className={`flex-1 overflow-hidden${activeTab === 'messages' ? '' : ' hidden'}`}>
+                  <ArcherMessages archer={selectedArcher} />
+                </div>
               </div>
             </>
           ) : (

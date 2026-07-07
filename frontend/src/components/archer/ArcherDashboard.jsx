@@ -302,11 +302,9 @@ export default function ArcherDashboard() {
         )}
 
         {/* Messages privés (coach ↔ archer) */}
-        {tab === 'messages' && (
-          <div className="flex-1 overflow-hidden">
-            <ArcherMessages archer={user} />
-          </div>
-        )}
+        <div className={`flex-1 overflow-hidden${tab === 'messages' ? '' : ' hidden'}`}>
+          <ArcherMessages archer={user} />
+        </div>
 
         {/* Chat de groupe */}
         {tab === 'groupe' && (
