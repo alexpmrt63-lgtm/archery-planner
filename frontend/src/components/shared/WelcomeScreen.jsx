@@ -471,25 +471,28 @@ const QUOTES = [
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function randomOther(current, max) {
-  let next;
-  do { next = Math.floor(Math.random() * max); } while (next === current && max > 1);
-  return next;
+function initShuffledQueue(length) {
+  const a = Array.from({ length }, (_, i) => i);
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
 // ── Composant principal ───────────────────────────────────────────────────────
 
 export default function WelcomeScreen({ userName, role = 'coach' }) {
   const [word] = useState(() => WORDS[Math.floor(Math.random() * WORDS.length)]);
-  // 50/50 : showPole détermine le pool, chaque index est indépendant
-  const [showPole, setShowPole]     = useState(() => Math.random() < 0.5);
-  const [poleIdx,  setPoleIdx]      = useState(() => Math.floor(Math.random() * POLE_QUOTES.length));
-  const [sportsIdx, setSportsIdx]   = useState(() => {
-    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86_400_000);
-    return dayOfYear % QUOTES.length;
-  });
-  const [imgError, setImgError] = useState(false);
+  const [poleQueue,   setPoleQueue]   = useState(() => initShuffledQueue(POLE_QUOTES.length));
+  const [sportsQueue, setSportsQueue] = useState(() => initShuffledQueue(QUOTES.length));
+  const [polePos,     setPolePos]     = useState(0);
+  const [sportsPos,   setSportsPos]   = useState(0);
+  const [showPole,    setShowPole]    = useState(() => Math.random() < 0.5);
+  const [imgError,    setImgError]    = useState(false);
 
+  const poleIdx   = poleQueue[polePos];
+  const sportsIdx = sportsQueue[sportsPos];
   const firstName = userName?.split(' ')[0] ?? userName ?? '';
   const isPole    = showPole;
   const current   = isPole ? POLE_QUOTES[poleIdx] : QUOTES[sportsIdx];
@@ -500,9 +503,22 @@ export default function WelcomeScreen({ userName, role = 'coach' }) {
   function handleNextQuote() {
     const nextIsPole = Math.random() < 0.5;
     setShowPole(nextIsPole);
-    if (nextIsPole) setPoleIdx(i => randomOther(i, POLE_QUOTES.length));
-    else            setSportsIdx(i => randomOther(i, QUOTES.length));
     setImgError(false);
+    if (nextIsPole) {
+      const next = polePos + 1;
+      if (next >= POLE_QUOTES.length) {
+        const q = initShuffledQueue(POLE_QUOTES.length);
+        if (q[0] === poleIdx && POLE_QUOTES.length > 1) [q[0], q[1]] = [q[1], q[0]];
+        setPoleQueue(q); setPolePos(0);
+      } else { setPolePos(next); }
+    } else {
+      const next = sportsPos + 1;
+      if (next >= QUOTES.length) {
+        const q = initShuffledQueue(QUOTES.length);
+        if (q[0] === sportsIdx && QUOTES.length > 1) [q[0], q[1]] = [q[1], q[0]];
+        setSportsQueue(q); setSportsPos(0);
+      } else { setSportsPos(next); }
+    }
   }
 
   return (
