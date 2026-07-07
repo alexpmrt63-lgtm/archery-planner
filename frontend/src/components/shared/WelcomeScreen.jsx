@@ -276,12 +276,12 @@ const QUOTES = [
   {
     quote:  "Le succès, c'est la tranquillité d'esprit qui résulte de la satisfaction de savoir que vous avez fait de votre mieux.",
     author: "John Wooden", sport: "Entraîneur 🏆",
-    img: null,
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/John_Wooden.JPG/330px-John_Wooden.JPG",
   },
   {
     quote:  "Ne laisse pas ce que tu ne peux pas faire interférer avec ce que tu peux faire.",
     author: "John Wooden", sport: "Entraîneur 🏆",
-    img: null,
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/John_Wooden.JPG/330px-John_Wooden.JPG",
   },
   {
     quote:  "La perfection n'est pas atteignable, mais si nous poursuivons la perfection, nous pouvons atteindre l'excellence.",
