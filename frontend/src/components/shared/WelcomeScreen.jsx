@@ -319,57 +319,158 @@ const QUOTES = [
     author: "Tom Brady", sport: "Football américain 🏈",
     img: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Tom_Brady%2C_2017.jpg/330px-Tom_Brady%2C_2017.jpg",
   },
-  // ── Devises du sport ─────────────────────────────────────────────────────────
+  // ── Philosophie du coaching (Gilles Topandé-Makombo) ────────────────────────
   {
     quote:  "La confiance ne se donne pas, elle se construit.",
-    author: "Devise sportive", sport: "Sport 🏆",
-    img: null,
+    author: "Gilles Topandé-Makombo", sport: "Coach Pôle 🏹",
+    img: "/pole/gilles.jpg",
   },
   {
     quote:  "Sous pression, on ne révèle pas son niveau : on révèle son entraînement.",
-    author: "Devise sportive", sport: "Sport 🏆",
-    img: null,
+    author: "Gilles Topandé-Makombo", sport: "Coach Pôle 🏹",
+    img: "/pole/gilles.jpg",
   },
   {
     quote:  "L'objectif guide, le processus fait gagner.",
-    author: "Devise sportive", sport: "Sport 🏆",
-    img: null,
+    author: "Gilles Topandé-Makombo", sport: "Coach Pôle 🏹",
+    img: "/pole/gilles.jpg",
   },
   {
     quote:  "La répétition crée la maîtrise. La maîtrise crée la confiance.",
-    author: "Devise sportive", sport: "Sport 🏆",
-    img: null,
+    author: "Gilles Topandé-Makombo", sport: "Coach Pôle 🏹",
+    img: "/pole/gilles.jpg",
   },
   {
     quote:  "Les meilleurs ne sont pas extraordinaires tous les jours ; ils sont constants tous les jours.",
-    author: "Devise sportive", sport: "Sport 🏆",
-    img: null,
+    author: "Gilles Topandé-Makombo", sport: "Coach Pôle 🏹",
+    img: "/pole/gilles.jpg",
   },
   {
     quote:  "Le calme est une compétence qui s'entraîne.",
-    author: "Devise sportive", sport: "Sport 🏆",
-    img: null,
+    author: "Gilles Topandé-Makombo", sport: "Coach Pôle 🏹",
+    img: "/pole/gilles.jpg",
   },
   {
     quote:  "En compétition, on ne cherche pas la perfection. On exécute ce que l'on maîtrise.",
-    author: "Devise sportive", sport: "Sport 🏆",
-    img: null,
+    author: "Gilles Topandé-Makombo", sport: "Coach Pôle 🏹",
+    img: "/pole/gilles.jpg",
   },
-  // ── Tir à l'arc ──────────────────────────────────────────────────────────────
   {
     quote:  "La confiance est le souvenir de tous les entraînements réussis.",
-    author: "Tir à l'arc", sport: "Tir à l'arc 🏹",
-    img: null,
+    author: "Gilles Topandé-Makombo", sport: "Coach Pôle 🏹",
+    img: "/pole/gilles.jpg",
   },
   {
     quote:  "Quand la pression monte, reviens à ta routine.",
-    author: "Tir à l'arc", sport: "Tir à l'arc 🏹",
-    img: null,
+    author: "Gilles Topandé-Makombo", sport: "Coach Pôle 🏹",
+    img: "/pole/gilles.jpg",
   },
   {
     quote:  "Le champion ne pense pas au 10. Il pense au geste qui produit le 10.",
-    author: "Tir à l'arc", sport: "Tir à l'arc 🏹",
+    author: "Gilles Topandé-Makombo", sport: "Coach Pôle 🏹",
+    img: "/pole/gilles.jpg",
+  },
+  {
+    quote:  "La discipline finit toujours par battre la motivation.",
+    author: "Gilles Topandé-Makombo", sport: "Coach Pôle 🏹",
+    img: "/pole/gilles.jpg",
+  },
+  {
+    quote:  "Le talent ouvre des portes, le travail les garde ouvertes.",
+    author: "Gilles Topandé-Makombo", sport: "Coach Pôle 🏹",
+    img: "/pole/gilles.jpg",
+  },
+  {
+    quote:  "La confiance se construit à l'entraînement, elle s'exprime en compétition.",
+    author: "Gilles Topandé-Makombo", sport: "Coach Pôle 🏹",
+    img: "/pole/gilles.jpg",
+  },
+  {
+    quote:  "Gagner est une conséquence, progresser est un choix quotidien.",
+    author: "Gilles Topandé-Makombo", sport: "Coach Pôle 🏹",
+    img: "/pole/gilles.jpg",
+  },
+  {
+    quote:  "Ce que tu répètes, tu le deviens.",
+    author: "Gilles Topandé-Makombo", sport: "Coach Pôle 🏹",
+    img: "/pole/gilles.jpg",
+  },
+  {
+    quote:  "Les champions font les choses ordinaires de manière extraordinaire.",
+    author: "Gilles Topandé-Makombo", sport: "Coach Pôle 🏹",
+    img: "/pole/gilles.jpg",
+  },
+  {
+    quote:  "La fatigue fait abandonner les rêveurs, pas les préparés.",
+    author: "Gilles Topandé-Makombo", sport: "Coach Pôle 🏹",
+    img: "/pole/gilles.jpg",
+  },
+  {
+    quote:  "L'entraînement est le lieu où naît la sérénité de la compétition.",
+    author: "Gilles Topandé-Makombo", sport: "Coach Pôle 🏹",
+    img: "/pole/gilles.jpg",
+  },
+  {
+    quote:  "Chaque flèche est une nouvelle histoire.",
+    author: "Gilles Topandé-Makombo", sport: "Coach Pôle 🏹",
+    img: "/pole/gilles.jpg",
+  },
+  {
+    quote:  "Le résultat appartient au futur, le geste appartient au présent.",
+    author: "Gilles Topandé-Makombo", sport: "Coach Pôle 🏹",
+    img: "/pole/gilles.jpg",
+  },
+  {
+    quote:  "Fais confiance à ce que tu as construit.",
+    author: "Gilles Topandé-Makombo", sport: "Coach Pôle 🏹",
+    img: "/pole/gilles.jpg",
+  },
+  {
+    quote:  "Maîtrise le processus. Le résultat suivra.",
+    author: "Gilles Topandé-Makombo", sport: "Coach Pôle 🏹",
+    img: "/pole/gilles.jpg",
+  },
+  // ── Auteurs identifiés ───────────────────────────────────────────────────────
+  {
+    quote:  "On ne s'élève pas au niveau de ses objectifs, on retombe au niveau de ses habitudes.",
+    author: "James Clear", sport: "Auteur 📚",
     img: null,
+  },
+  {
+    quote:  "La pression est un privilège : elle signifie que quelque chose d'important est en jeu.",
+    author: "Billie Jean King", sport: "Tennis 🎾",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Billie_Jean_King_-_National_Book_Festival_2011.jpg/330px-Billie_Jean_King_-_National_Book_Festival_2011.jpg",
+  },
+  {
+    quote:  "L'excellence n'est pas un acte, c'est une habitude.",
+    author: "Aristote", sport: "Philosophie 🏛️",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Aristotle_Altemps_Inv8575.jpg/330px-Aristotle_Altemps_Inv8575.jpg",
+  },
+  {
+    quote:  "Le courage n'est pas l'absence de peur, c'est la capacité d'agir malgré elle.",
+    author: "Nelson Mandela", sport: "Leader 🌟",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Nelson_Mandela_-_2008_%28edit%29.jpg/330px-Nelson_Mandela_-_2008_%28edit%29.jpg",
+  },
+  // ── Champions — nouvelles citations ─────────────────────────────────────────
+  {
+    quote:  "J'ai échoué encore et encore dans ma vie. Et c'est pourquoi je réussis.",
+    author: "Michael Jordan", sport: "Basketball 🏀",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/330px-Michael_Jordan_in_2014.jpg",
+  },
+  {
+    quote:  "Je détestais chaque minute d'entraînement, mais je me disais : n'abandonne pas. Souffre maintenant et vis le reste de ta vie comme un champion.",
+    author: "Muhammad Ali", sport: "Boxe 🥊",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Muhammad_Ali_NYWTS.jpg/330px-Muhammad_Ali_NYWTS.jpg",
+  },
+  {
+    quote:  "La victoire est importante, mais le plus important est de donner le meilleur de soi-même.",
+    author: "Rafael Nadal", sport: "Tennis 🎾",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Rafael_Nadal_en_2024_%28cropped%29.jpg/330px-Rafael_Nadal_en_2024_%28cropped%29.jpg",
+  },
+  {
+    quote:  "Tout ce qui est négatif — pression, défis — est une opportunité de grandir.",
+    author: "Kobe Bryant", sport: "Basketball 🏀",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Kobe_Bryant_Dec_2014.jpg/330px-Kobe_Bryant_Dec_2014.jpg",
   },
 ];
 
