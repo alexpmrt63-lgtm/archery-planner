@@ -36,11 +36,6 @@ const POLE_QUOTES = [
     author: "Gilles Topandé-Makombo", role: "Coach",
     img: "/pole/gilles.jpg",
   },
-  {
-    quote:  "J'ai fait de mon mieux mais mon mieux c'est de la merde.",
-    author: "Siham Er'rahmouni", role: "Archer",
-    img: "/pole/siham.jpg",
-  },
 ];
 
 // ── 30 citations de sportifs — photos Wikipedia Commons ──────────────────────
@@ -275,7 +270,7 @@ const QUOTES = [
   {
     quote:  "Peu importe à quel point tu es bon, tu peux toujours devenir meilleur.",
     author: "Tiger Woods", sport: "Golf ⛳",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Tiger_Woods_%282019_BM%29_%28cropped%29.jpg/330px-Tiger_Woods_%282019_BM%29_%28cropped%29.jpg",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/President_Donald_Trump_hosts_a_reception_honoring_Black_History_Month_%2854341713089%29_%28cropped%29.jpg/330px-President_Donald_Trump_hosts_a_reception_honoring_Black_History_Month_%2854341713089%29_%28cropped%29.jpg",
   },
   // ── Les grands entraîneurs ───────────────────────────────────────────────────
   {
@@ -301,7 +296,7 @@ const QUOTES = [
   {
     quote:  "Le travail acharné est le prix du succès.",
     author: "Alex Ferguson", sport: "Entraîneur ⚽",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Alex_Ferguson_%28cropped%29.jpg/330px-Alex_Ferguson_%28cropped%29.jpg",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Alex_Ferguson_2012.jpg/330px-Alex_Ferguson_2012.jpg",
   },
   // ── Processus et performance ─────────────────────────────────────────────────
   {
@@ -317,7 +312,7 @@ const QUOTES = [
   {
     quote:  "Tu pousses ton corps jusqu'à ses limites, puis ton esprit prend le relais.",
     author: "Tom Brady", sport: "Football américain 🏈",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Tom_Brady%2C_2017.jpg/330px-Tom_Brady%2C_2017.jpg",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/25th_Laureus_World_Sports_Awards_-_Red_Carpet_-_Tom_Brady_-_240422_191334_%28cropped%29_%28cropped%29.jpg/330px-25th_Laureus_World_Sports_Awards_-_Red_Carpet_-_Tom_Brady_-_240422_191334_%28cropped%29_%28cropped%29.jpg",
   },
   // ── Philosophie du coaching (Gilles Topandé-Makombo) ────────────────────────
   {
@@ -439,7 +434,7 @@ const QUOTES = [
   {
     quote:  "La pression est un privilège : elle signifie que quelque chose d'important est en jeu.",
     author: "Billie Jean King", sport: "Tennis 🎾",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Billie_Jean_King_-_National_Book_Festival_2011.jpg/330px-Billie_Jean_King_-_National_Book_Festival_2011.jpg",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Billie_Jean_King_at_the_2026_Sundance_Film_Festival_02_%28crop_2%29.jpg/330px-Billie_Jean_King_at_the_2026_Sundance_Film_Festival_02_%28crop_2%29.jpg",
   },
   {
     quote:  "L'excellence n'est pas un acte, c'est une habitude.",
@@ -449,7 +444,7 @@ const QUOTES = [
   {
     quote:  "Le courage n'est pas l'absence de peur, c'est la capacité d'agir malgré elle.",
     author: "Nelson Mandela", sport: "Leader 🌟",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Nelson_Mandela_-_2008_%28edit%29.jpg/330px-Nelson_Mandela_-_2008_%28edit%29.jpg",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Nelson_Mandela_1994.jpg/330px-Nelson_Mandela_1994.jpg",
   },
   // ── Champions — nouvelles citations ─────────────────────────────────────────
   {
