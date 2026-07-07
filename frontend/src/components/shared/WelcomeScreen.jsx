@@ -235,6 +235,142 @@ const QUOTES = [
     author: "Marta", sport: "Football ⚽",
     img: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/NC_Courage_vs_Orlando_Pride_%28Jun_2024%29_073_%28cropped%29.jpg/330px-NC_Courage_vs_Orlando_Pride_%28Jun_2024%29_073_%28cropped%29.jpg",
   },
+  // ── Mentalité et excellence ──────────────────────────────────────────────────
+  {
+    quote:  "Il n'y a pas de limites. Plus tu rêves, plus tu iras loin.",
+    author: "Michael Phelps", sport: "Natation 🏊",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Michael_Phelps_Rio_Olympics_2016.jpg/330px-Michael_Phelps_Rio_Olympics_2016.jpg",
+  },
+  {
+    quote:  "La force mentale est aussi importante que la force physique.",
+    author: "Novak Djokovic", sport: "Tennis 🎾",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Novak_Djokovic_2024_Paris_Olympics.jpg/330px-Novak_Djokovic_2024_Paris_Olympics.jpg",
+  },
+  {
+    quote:  "Il n'y a pas de raccourci. Tout est question de travail, de patience et de confiance.",
+    author: "Roger Federer", sport: "Tennis 🎾",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Roger_Federer_2015_%28cropped%29.jpg/330px-Roger_Federer_2015_%28cropped%29.jpg",
+  },
+  {
+    quote:  "Les grandes choses viennent du travail acharné et de la persévérance. Pas d'excuses.",
+    author: "Kobe Bryant", sport: "Basketball 🏀",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Kobe_Bryant_Dec_2014.jpg/330px-Kobe_Bryant_Dec_2014.jpg",
+  },
+  {
+    quote:  "Je me suis entraîné quatre ans pour courir neuf secondes.",
+    author: "Usain Bolt", sport: "Sprint 💨",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Usain_Bolt_smiling_Berlin_2009.JPG/330px-Usain_Bolt_smiling_Berlin_2009.JPG",
+  },
+  // ── Résilience ───────────────────────────────────────────────────────────────
+  {
+    quote:  "Certains veulent que ça arrive, d'autres souhaiteraient que ça arrive, les autres font en sorte que ça arrive.",
+    author: "Michael Jordan", sport: "Basketball 🏀",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/330px-Michael_Jordan_in_2014.jpg",
+  },
+  {
+    quote:  "La chance n'a rien à voir avec le succès.",
+    author: "Serena Williams", sport: "Tennis 🎾",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Guests_at_the_2026_Met_Gala_209_%28cropped%29.jpg/330px-Guests_at_the_2026_Met_Gala_209_%28cropped%29.jpg",
+  },
+  {
+    quote:  "Peu importe à quel point tu es bon, tu peux toujours devenir meilleur.",
+    author: "Tiger Woods", sport: "Golf ⛳",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Tiger_Woods_%282019_BM%29_%28cropped%29.jpg/330px-Tiger_Woods_%282019_BM%29_%28cropped%29.jpg",
+  },
+  // ── Les grands entraîneurs ───────────────────────────────────────────────────
+  {
+    quote:  "Le succès, c'est la tranquillité d'esprit qui résulte de la satisfaction de savoir que vous avez fait de votre mieux.",
+    author: "John Wooden", sport: "Entraîneur 🏆",
+    img: null,
+  },
+  {
+    quote:  "Ne laisse pas ce que tu ne peux pas faire interférer avec ce que tu peux faire.",
+    author: "John Wooden", sport: "Entraîneur 🏆",
+    img: null,
+  },
+  {
+    quote:  "La perfection n'est pas atteignable, mais si nous poursuivons la perfection, nous pouvons atteindre l'excellence.",
+    author: "Vince Lombardi", sport: "Entraîneur 🏈",
+    img: null,
+  },
+  {
+    quote:  "La force de l'équipe réside dans chaque membre. La force de chaque membre réside dans l'équipe.",
+    author: "Phil Jackson", sport: "Entraîneur 🏀",
+    img: null,
+  },
+  {
+    quote:  "Le travail acharné est le prix du succès.",
+    author: "Alex Ferguson", sport: "Entraîneur ⚽",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Alex_Ferguson_%28cropped%29.jpg/330px-Alex_Ferguson_%28cropped%29.jpg",
+  },
+  // ── Processus et performance ─────────────────────────────────────────────────
+  {
+    quote:  "Le plus important est de continuer à essayer de s'améliorer chaque jour.",
+    author: "Rafael Nadal", sport: "Tennis 🎾",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Rafael_Nadal_en_2024_%28cropped%29.jpg/330px-Rafael_Nadal_en_2024_%28cropped%29.jpg",
+  },
+  {
+    quote:  "Je ne me compare pas aux autres. Je cherche à être la meilleure version de moi-même.",
+    author: "Simone Biles", sport: "Gymnastique 🤸",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Simone_Biles_National_Team_2024.jpg/330px-Simone_Biles_National_Team_2024.jpg",
+  },
+  {
+    quote:  "Tu pousses ton corps jusqu'à ses limites, puis ton esprit prend le relais.",
+    author: "Tom Brady", sport: "Football américain 🏈",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Tom_Brady%2C_2017.jpg/330px-Tom_Brady%2C_2017.jpg",
+  },
+  // ── Devises du sport ─────────────────────────────────────────────────────────
+  {
+    quote:  "La confiance ne se donne pas, elle se construit.",
+    author: "Devise sportive", sport: "Sport 🏆",
+    img: null,
+  },
+  {
+    quote:  "Sous pression, on ne révèle pas son niveau : on révèle son entraînement.",
+    author: "Devise sportive", sport: "Sport 🏆",
+    img: null,
+  },
+  {
+    quote:  "L'objectif guide, le processus fait gagner.",
+    author: "Devise sportive", sport: "Sport 🏆",
+    img: null,
+  },
+  {
+    quote:  "La répétition crée la maîtrise. La maîtrise crée la confiance.",
+    author: "Devise sportive", sport: "Sport 🏆",
+    img: null,
+  },
+  {
+    quote:  "Les meilleurs ne sont pas extraordinaires tous les jours ; ils sont constants tous les jours.",
+    author: "Devise sportive", sport: "Sport 🏆",
+    img: null,
+  },
+  {
+    quote:  "Le calme est une compétence qui s'entraîne.",
+    author: "Devise sportive", sport: "Sport 🏆",
+    img: null,
+  },
+  {
+    quote:  "En compétition, on ne cherche pas la perfection. On exécute ce que l'on maîtrise.",
+    author: "Devise sportive", sport: "Sport 🏆",
+    img: null,
+  },
+  // ── Tir à l'arc ──────────────────────────────────────────────────────────────
+  {
+    quote:  "La confiance est le souvenir de tous les entraînements réussis.",
+    author: "Tir à l'arc", sport: "Tir à l'arc 🏹",
+    img: null,
+  },
+  {
+    quote:  "Quand la pression monte, reviens à ta routine.",
+    author: "Tir à l'arc", sport: "Tir à l'arc 🏹",
+    img: null,
+  },
+  {
+    quote:  "Le champion ne pense pas au 10. Il pense au geste qui produit le 10.",
+    author: "Tir à l'arc", sport: "Tir à l'arc 🏹",
+    img: null,
+  },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
