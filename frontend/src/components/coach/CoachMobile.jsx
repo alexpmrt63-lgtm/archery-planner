@@ -5,6 +5,7 @@ import MobileDayView from '../shared/MobileDayView.jsx';
 import ArcherStats from './ArcherStats.jsx';
 import ArcherMessages from './ArcherMessages.jsx';
 import GroupChat from '../shared/GroupChat.jsx';
+import DocumentsSpace from '../shared/DocumentsSpace.jsx';
 import WelcomeScreen from '../shared/WelcomeScreen.jsx';
 import MobileAddSheet from './MobileAddSheet.jsx';
 
@@ -54,6 +55,21 @@ export default function CoachMobile({
         </header>
         <div className="flex-1 overflow-hidden">
           <GroupChat currentUser={user} />
+        </div>
+      </div>
+    );
+  }
+
+  // ── Documents du pôle ──────────────────────────────────────────────────────
+  if (activeTab === 'documents') {
+    return (
+      <div className="flex flex-col bg-gray-50" style={{ height: '100dvh' }}>
+        <header className="bg-white border-b border-gray-200 px-2 py-2 flex items-center gap-1 shrink-0">
+          <button onClick={() => setActiveTab('planning')} aria-label="Retour" className="w-11 h-11 flex items-center justify-center text-2xl text-gray-500">‹</button>
+          <h1 className="font-bold text-gray-900">📁 Documents du pôle</h1>
+        </header>
+        <div className="flex-1 overflow-hidden">
+          <DocumentsSpace currentUser={user} compact />
         </div>
       </div>
     );
@@ -111,7 +127,7 @@ export default function CoachMobile({
           {archers.length === 0 && <p className="text-xs text-blue-400 px-4">Aucun archer inscrit</p>}
         </div>
 
-        <div className="p-4 border-t border-blue-800 flex items-center justify-between shrink-0" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
+        <div className="p-4 border-t border-blue-800 flex flex-wrap items-center gap-1 shrink-0" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
           <button
             onClick={() => setActiveTab('groupe')}
             className="flex items-center gap-2 text-sm px-3 py-2.5 rounded-lg text-blue-200 hover:text-white hover:bg-blue-800"
@@ -119,7 +135,14 @@ export default function CoachMobile({
             <span className="text-base leading-none">👥</span>
             Chat de groupe
           </button>
-          <button onClick={logout} className="text-sm text-blue-400 hover:text-white px-2 py-2.5">
+          <button
+            onClick={() => setActiveTab('documents')}
+            className="flex items-center gap-2 text-sm px-3 py-2.5 rounded-lg text-blue-200 hover:text-white hover:bg-blue-800"
+          >
+            <span className="text-base leading-none">📁</span>
+            Documents
+          </button>
+          <button onClick={logout} className="ml-auto text-sm text-blue-400 hover:text-white px-2 py-2.5">
             Se déconnecter
           </button>
         </div>

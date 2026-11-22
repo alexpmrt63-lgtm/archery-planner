@@ -9,6 +9,7 @@ import WelcomeScreen from '../shared/WelcomeScreen.jsx';
 import ArcherMessages from '../coach/ArcherMessages.jsx';
 import SessionDetailModal from '../coach/SessionDetailModal.jsx';
 import GroupChat from '../shared/GroupChat.jsx';
+import DocumentsSpace from '../shared/DocumentsSpace.jsx';
 import { usePushSubscription } from '../../hooks/usePushSubscription.js';
 import NotificationBanner from '../shared/NotificationBanner.jsx';
 import MobileDayView from '../shared/MobileDayView.jsx';
@@ -208,6 +209,7 @@ export default function ArcherDashboard() {
     { id: 'upload',   icon: '📷', label: 'EDT',      shortLabel: 'EDT'      },
     { id: 'messages', icon: '💬', label: 'Messages', shortLabel: 'Privé'    },
     { id: 'groupe',   icon: '👥', label: 'Groupe',   shortLabel: 'Groupe'   },
+    { id: 'documents', icon: '📁', label: 'Documents', shortLabel: 'Docs'  },
   ];
 
   return (
@@ -365,6 +367,13 @@ export default function ArcherDashboard() {
         {tab === 'groupe' && (
           <div className="flex-1 overflow-hidden">
             <GroupChat currentUser={user} />
+          </div>
+        )}
+
+        {/* Documents du pôle */}
+        {tab === 'documents' && (
+          <div className="flex-1 overflow-hidden">
+            <DocumentsSpace currentUser={user} compact={isMobile} />
           </div>
         )}
 

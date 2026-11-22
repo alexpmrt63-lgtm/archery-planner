@@ -13,6 +13,7 @@ import SessionDetailModal from './SessionDetailModal.jsx';
 import SharePlanningModal from './SharePlanningModal.jsx';
 import WelcomeScreen from '../shared/WelcomeScreen.jsx';
 import GroupChat from '../shared/GroupChat.jsx';
+import DocumentsSpace from '../shared/DocumentsSpace.jsx';
 import { usePushSubscription } from '../../hooks/usePushSubscription.js';
 import NotificationBanner from '../shared/NotificationBanner.jsx';
 import { useIsMobile } from '../../hooks/useIsMobile.js';
@@ -512,6 +513,18 @@ export default function CoachDashboard() {
             <span className="text-base leading-none shrink-0">👥</span>
             {sidebarOpen && 'Chat de groupe'}
           </button>
+          {/* Documents du pôle */}
+          <button
+            onClick={() => setActiveTab('documents')}
+            className={`w-full flex items-center gap-2 text-xs px-2 py-1.5 rounded-lg transition ${
+              activeTab === 'documents'
+                ? 'bg-blue-700 text-white font-semibold'
+                : 'text-blue-400 hover:text-white hover:bg-blue-800'
+            }`}
+          >
+            <span className="text-base leading-none shrink-0">📁</span>
+            {sidebarOpen && 'Documents'}
+          </button>
           <button onClick={logout} className="text-xs text-blue-400 hover:text-white transition block">
             {sidebarOpen ? 'Se déconnecter' : '⎋'}
           </button>
@@ -522,7 +535,9 @@ export default function CoachDashboard() {
       <main className="flex-1 flex flex-col overflow-hidden">
         <header className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {selectedArcher
+            {activeTab === 'documents'
+              ? <h1 className="font-bold text-gray-900">📁 Documents du pôle</h1>
+              : selectedArcher
               ? <h1 className="font-bold text-gray-900">{selectedArcher.name}</h1>
               : <h1 className="font-bold text-gray-400">Sélectionnez un archer</h1>
             }
@@ -568,6 +583,11 @@ export default function CoachDashboard() {
             /* ── Chat de groupe (indépendant de l'archer sélectionné) ── */
             <div className="flex-1 overflow-hidden">
               <GroupChat currentUser={user} />
+            </div>
+          ) : activeTab === 'documents' ? (
+            /* ── Documents du pôle (indépendant de l'archer sélectionné) ── */
+            <div className="flex-1 overflow-hidden">
+              <DocumentsSpace currentUser={user} />
             </div>
           ) : selectedArcher ? (
             <>
