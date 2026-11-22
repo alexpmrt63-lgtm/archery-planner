@@ -12,6 +12,7 @@ import commentsRoutes  from './routes/comments.js';
 import messagesRoutes  from './routes/messages.js';
 import groupChatRoutes from './routes/groupChat.js';
 import seasonRoutes    from './routes/season.js';
+import documentsRoutes from './routes/documents.js';
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use('/api/comments', commentsRoutes);
 app.use('/api/messages',    messagesRoutes);
 app.use('/api/group-chat', groupChatRoutes);
 app.use('/api/season',     seasonRoutes);
+app.use('/api/documents',  documentsRoutes);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
