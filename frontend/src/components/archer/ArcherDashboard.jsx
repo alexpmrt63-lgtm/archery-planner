@@ -11,6 +11,8 @@ import SessionDetailModal from '../coach/SessionDetailModal.jsx';
 import GroupChat from '../shared/GroupChat.jsx';
 import { usePushSubscription } from '../../hooks/usePushSubscription.js';
 import NotificationBanner from '../shared/NotificationBanner.jsx';
+import MobileDayView from '../shared/MobileDayView.jsx';
+import { useIsMobile } from '../../hooks/useIsMobile.js';
 
 const REFRESH_INTERVAL = 30_000;
 
@@ -21,6 +23,7 @@ function currentMonday() {
 export default function ArcherDashboard() {
   const { user, logout } = useAuthContext();
   const { needsPrompt, enableNotifications, dismissBanner } = usePushSubscription();
+  const isMobile = useIsMobile();
 
   const [weekStart, setWeekStart]             = useState(currentMonday());
   const [uploadWeekStart, setUploadWeekStart] = useState(currentMonday());
@@ -276,6 +279,15 @@ export default function ArcherDashboard() {
               </div>
             )}
 
+            {isMobile ? (
+              /* Téléphone : vue jour (la grille de la semaine reste sur ordinateur) */
+              <MobileDayView
+                weekStart={weekStart}
+                coursSlots={coursSlots}
+                trainingSessions={trainingSessions}
+                onViewSession={session => setViewSession(session)}
+              />
+            ) : (
             <WeeklyPlanner
               weekStart={weekStart}
               coursSlots={coursSlots}
@@ -284,6 +296,7 @@ export default function ArcherDashboard() {
               onViewSession={session => setViewSession(session)}
               dayColWidth={96}
             />
+            )}
 
             {/* Légende */}
             <div className="flex items-center justify-between mt-2 px-0.5">

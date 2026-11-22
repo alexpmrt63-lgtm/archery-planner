@@ -15,10 +15,13 @@ import WelcomeScreen from '../shared/WelcomeScreen.jsx';
 import GroupChat from '../shared/GroupChat.jsx';
 import { usePushSubscription } from '../../hooks/usePushSubscription.js';
 import NotificationBanner from '../shared/NotificationBanner.jsx';
+import { useIsMobile } from '../../hooks/useIsMobile.js';
+import CoachMobile from './CoachMobile.jsx';
 
 export default function CoachDashboard() {
   const { user, logout } = useAuthContext();
   const { needsPrompt, enableNotifications, dismissBanner } = usePushSubscription();
+  const isMobile = useIsMobile();
   const [archers, setArchers]               = useState([]);
   const [selectedArcher, setSelectedArcher] = useState(null);
   const [weekStart, setWeekStart]           = useState(format(startOfISOWeek(new Date()), 'yyyy-MM-dd'));
@@ -272,6 +275,73 @@ export default function CoachDashboard() {
     } catch {
       setTrainingSessions(prev => prev.map(s => s.id === sessionId ? backup : s));
     }
+  }
+
+  // ── Téléphone : affichage dédié. La version ordinateur ci-dessous n'est pas modifiée. ──
+  if (isMobile) {
+    return (
+      <>
+        <CoachMobile
+          user={user}
+          logout={logout}
+          archers={archers}
+          selectedArcher={selectedArcher}
+          setSelectedArcher={setSelectedArcher}
+          weekStart={weekStart}
+          setWeekStart={setWeekStart}
+          coursSlots={coursSlots}
+          trainingSessions={trainingSessions}
+          trainingTypes={trainingTypes}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          loading={loading}
+          archerComment={archerComment}
+          onAddTraining={confirmAddTraining}
+          onViewSession={session => setViewModal(session)}
+          onShare={() => setShareOpen(true)}
+        />
+
+        {shareOpen && selectedArcher && (
+          <SharePlanningModal
+            sourceArcher={selectedArcher}
+            weekStart={weekStart}
+            allArchers={archers}
+            onClose={() => setShareOpen(false)}
+            onShared={() => {
+              archers.forEach(a => delete cache.current[`${a.id}_${weekStart}`]);
+            }}
+          />
+        )}
+
+        {viewModal && (
+          <SessionDetailModal
+            session={viewModal}
+            role="coach"
+            onClose={() => setViewModal(null)}
+            onEdit={session => { setViewModal(null); setEditModal(session); }}
+            onDelete={id => { handleDeleteTraining(id); setViewModal(null); }}
+            onUpdate={updated => {
+              setTrainingSessions(prev => prev.map(s => s.id === updated.id ? updated : s));
+              invalidateCache(selectedArcher, weekStart);
+            }}
+          />
+        )}
+
+        {editModal && (
+          <EditTrainingModal
+            session={editModal}
+            trainingTypes={trainingTypes}
+            onSave={handleEditTraining}
+            onDelete={id => { handleDeleteTraining(id); setEditModal(null); }}
+            onClose={() => setEditModal(null)}
+          />
+        )}
+
+        {needsPrompt && (
+          <NotificationBanner onEnable={enableNotifications} onDismiss={dismissBanner} />
+        )}
+      </>
+    );
   }
 
   return (
