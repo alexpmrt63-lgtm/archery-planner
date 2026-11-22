@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import api from '../../api/client.js';
+import { textOn, formatRange, KIND_LABEL } from '../../utils/season.js';
 
 const PRESET_COLORS = [
   '#3b82f6', '#10b981', '#f59e0b', '#ef4444',
@@ -126,7 +127,7 @@ function LibraryBlock({ type, isDuplicate, onEdit, onDelete, onLibDragStart, onL
   );
 }
 
-export default function TrainingTypesPanel({ types, onUpdate, onLibDragStart, onLibDragEnd }) {
+export default function TrainingTypesPanel({ types, onUpdate, onLibDragStart, onLibDragEnd, weekEvents = [] }) {
   const [form, setForm]       = useState({ title: '', color: PRESET_COLORS[0], duration_minutes: 120 });
   const [editing, setEditing] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -214,6 +215,34 @@ export default function TrainingTypesPanel({ types, onUpdate, onLibDragStart, on
 
       {/* ── Bibliothèque ── */}
       <div className="flex-1 overflow-y-auto min-h-0">
+        {/* ── Évènements de la saison qui ont lieu cette semaine ── */}
+        {weekEvents.length > 0 && (
+          <div className="mb-3 bg-blue-50 border border-blue-200 rounded-xl p-2.5 flex flex-col gap-2">
+            <p className="text-[10px] font-bold text-blue-700 uppercase tracking-widest">Cette semaine</p>
+            {weekEvents.map(ev => (
+              <div
+                key={ev.id}
+                draggable
+                onDragStart={e => {
+                  e.dataTransfer.setData('application/x-library', JSON.stringify({
+                    season_event_id: ev.id,
+                    duration_minutes: 120,
+                  }));
+                  e.dataTransfer.effectAllowed = 'copy';
+                  onLibDragStart?.({ id: `event_${ev.id}`, title: ev.title, color: ev.color, duration_minutes: 120 });
+                }}
+                onDragEnd={() => onLibDragEnd?.()}
+                title="Glisser sur le planning"
+                className="rounded-lg px-2.5 py-2 cursor-grab active:cursor-grabbing select-none shadow-sm flex flex-col gap-0.5"
+                style={{ backgroundColor: ev.color, color: textOn(ev.color) }}
+              >
+                <span className="text-xs font-bold leading-tight">{ev.title}</span>
+                <span className="text-[10px] font-medium">{KIND_LABEL[ev.kind]} · {formatRange(ev)}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
           Bibliothèque · glisser sur le planning
         </p>

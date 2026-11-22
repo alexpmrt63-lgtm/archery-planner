@@ -17,6 +17,15 @@ import { usePushSubscription } from '../../hooks/usePushSubscription.js';
 import NotificationBanner from '../shared/NotificationBanner.jsx';
 import { useIsMobile } from '../../hooks/useIsMobile.js';
 import CoachMobile from './CoachMobile.jsx';
+import SeasonYearView from '../shared/SeasonYearView.jsx';
+import SeasonEventModal from './SeasonEventModal.jsx';
+import SeasonImportModal from './SeasonImportModal.jsx';
+import { eventsInWeek } from '../../utils/season.js';
+
+const DESKTOP_VIEW_KEY = 'desktop-planning-view';
+function readDesktopView() {
+  try { return localStorage.getItem(DESKTOP_VIEW_KEY) === 'annee' ? 'annee' : 'semaine'; } catch { return 'semaine'; }
+}
 
 export default function CoachDashboard() {
   const { user, logout } = useAuthContext();
@@ -37,6 +46,11 @@ export default function CoachDashboard() {
   const [sidebarOpen, setSidebarOpen]       = useState(true);
   const [loading, setLoading]               = useState(false);
   const [archerComment, setArcherComment]   = useState(null); // commentaire archer pour la semaine affichée
+  const [seasonEvents, setSeasonEvents]     = useState([]);   // compétitions et stages de l'archer
+  const [seasonError, setSeasonError]       = useState('');
+  const [planningView, setPlanningViewState] = useState(readDesktopView); // 'semaine' | 'annee' (ordinateur)
+  const [eventModal, setEventModal]         = useState(null); // { event } ou { event: null } pour un ajout
+  const [importOpen, setImportOpen]         = useState(false);
 
   // Cache { key: { cours, training, ts } } — données valides 15 secondes
   const CACHE_TTL = 15_000;
@@ -51,6 +65,56 @@ export default function CoachDashboard() {
   }, []);
 
   function markPlanningChanged() {}
+
+  function setPlanningView(v) {
+    setPlanningViewState(v);
+    try { localStorage.setItem(DESKTOP_VIEW_KEY, v); } catch { /* stockage indisponible */ }
+  }
+
+  // ── Saison : compétitions et stages de l'archer sélectionné ──────────────
+  const loadSeason = useCallback(async archer => {
+    if (!archer) { setSeasonEvents([]); return; }
+    try {
+      const { data } = await api.get(`/season/${archer.id}`);
+      setSeasonEvents(data);
+      setSeasonError('');
+    } catch {
+      setSeasonEvents([]);
+      setSeasonError("Le calendrier de la saison n'est pas encore disponible : il faut lancer le script SQL dans Supabase et redéployer le serveur.");
+    }
+  }, []);
+  useEffect(() => { loadSeason(selectedArcher); }, [selectedArcher, loadSeason]);
+
+  const weekEvents = eventsInWeek(seasonEvents, weekStart);
+
+  async function saveEvent(form, scope) {
+    const current = eventModal?.event;
+    if (current) {
+      await api.put(`/season/${current.id}`, { ...form, scope: scope === 'group' ? 'group' : 'one' });
+    } else {
+      await api.post('/season', { ...form, archer_id: selectedArcher.id, apply_to_all: scope === 'all' });
+    }
+    setEventModal(null);
+    loadSeason(selectedArcher);
+  }
+
+  async function deleteEvent(scope) {
+    const current = eventModal?.event;
+    if (!current) return;
+    await api.delete(`/season/${current.id}`, { params: { scope: scope === 'group' ? 'group' : 'one' } });
+    setEventModal(null);
+    loadSeason(selectedArcher);
+  }
+
+  async function importEvents(events, scope) {
+    await api.post('/season/import', {
+      events,
+      apply_to_all: scope === 'all',
+      archer_ids: scope === 'all' ? undefined : [selectedArcher.id],
+    });
+    setImportOpen(false);
+    loadSeason(selectedArcher);
+  }
 
   // Recale sur la semaine courante si la page reste ouverte de nuit
   useEffect(() => {
@@ -163,7 +227,8 @@ export default function CoachDashboard() {
   // -- Ajout optimiste --
   async function confirmAddTraining(form) {
     const tempId = `temp_${Date.now()}`;
-    const type = trainingTypes.find(t => t.id === form.training_type_id);
+    const type = trainingTypes.find(t => t.id === form.training_type_id)
+      || seasonEvents.find(ev => ev.id === form.season_event_id);
     const optimistic = {
       id: tempId,
       archer_id: selectedArcher.id,
@@ -207,10 +272,13 @@ export default function CoachDashboard() {
   }
 
   // -- Dépôt depuis la bibliothèque (sans modale) --
-  async function handleDropFromLibrary({ day, startTime, endTime, training_type_id }) {
+  async function handleDropFromLibrary({ day, startTime, endTime, training_type_id, season_event_id }) {
     markPlanningChanged();
     const tempId = `temp_${Date.now()}`;
-    const type   = trainingTypes.find(t => t.id === training_type_id);
+    // Une situation de la banque, ou l'évènement de la semaine (« Cette semaine »)
+    const type   = season_event_id
+      ? seasonEvents.find(ev => ev.id === season_event_id)
+      : trainingTypes.find(t => t.id === training_type_id);
     const optimistic = {
       id: tempId,
       archer_id: selectedArcher.id,
@@ -218,7 +286,8 @@ export default function CoachDashboard() {
       day_of_week: day,
       start_time: startTime,
       end_time: endTime,
-      training_type_id,
+      training_type_id: training_type_id || null,
+      season_event_id: season_event_id || null,
       notes: '',
       training_type: type ? { title: type.title, color: type.color } : null,
     };
@@ -230,7 +299,8 @@ export default function CoachDashboard() {
         day_of_week: day,
         start_time: startTime,
         end_time: endTime,
-        training_type_id,
+        training_type_id: training_type_id || null,
+        ...(season_event_id && { season_event_id }),
         notes: '',
       });
       setTrainingSessions(prev => prev.map(s => s.id === tempId ? data : s));
@@ -299,6 +369,11 @@ export default function CoachDashboard() {
           onAddTraining={confirmAddTraining}
           onViewSession={session => setViewModal(session)}
           onShare={() => setShareOpen(true)}
+          seasonEvents={seasonError ? [] : seasonEvents}
+          seasonError={seasonError}
+          weekEvents={weekEvents}
+          onAddEvent={() => setEventModal({ event: null })}
+          onEditEvent={ev => setEventModal({ event: ev })}
         />
 
         {shareOpen && selectedArcher && (
@@ -337,6 +412,23 @@ export default function CoachDashboard() {
           />
         )}
 
+        {eventModal && selectedArcher && (
+          <SeasonEventModal
+            event={eventModal.event}
+            archerName={selectedArcher.name}
+            defaultDate={weekStart}
+            onSave={saveEvent}
+            onDelete={deleteEvent}
+            onClose={() => setEventModal(null)}
+          />
+        )}
+        {importOpen && selectedArcher && (
+          <SeasonImportModal
+            archerName={selectedArcher.name}
+            onImport={importEvents}
+            onClose={() => setImportOpen(false)}
+          />
+        )}
         {needsPrompt && (
           <NotificationBanner onEnable={enableNotifications} onDismiss={dismissBanner} />
         )}
@@ -491,9 +583,47 @@ export default function CoachDashboard() {
                 </div>
 
                 {/* Contenu de l'onglet actif */}
-                {activeTab === 'planning' && (
+                {activeTab === 'planning' && planningView === 'annee' && (
+                  <div className="flex-1 overflow-y-auto p-6">
+                    <div className="mb-4 inline-flex bg-gray-100 rounded-lg p-1" role="group" aria-label="Affichage du planning">
+                      {[['semaine', 'Semaine'], ['annee', 'Année']].map(([id, label]) => (
+                        <button key={id} onClick={() => setPlanningView(id)} aria-pressed={planningView === id}
+                          className={`px-5 py-1.5 rounded-md text-sm font-medium transition ${planningView === id ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                    <SeasonYearView
+                      events={seasonEvents}
+                      error={seasonError}
+                      onEventClick={ev => setEventModal({ event: ev })}
+                      actions={!seasonError && (
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => setImportOpen(true)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-blue-700 hover:bg-blue-50 border border-blue-200 transition">
+                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+                            Importer un fichier Excel
+                          </button>
+                          <button onClick={() => setEventModal({ event: null })}
+                            className="px-3 py-1.5 rounded-lg text-sm font-semibold text-white bg-blue-700 hover:bg-blue-800 transition">
+                            + Évènement
+                          </button>
+                        </div>
+                      )}
+                    />
+                  </div>
+                )}
+                {activeTab === 'planning' && planningView !== 'annee' && (
                   <div className="flex-1 flex overflow-hidden">
                     <div className="flex-1 overflow-y-auto p-6">
+                      <div className="mb-4 inline-flex bg-gray-100 rounded-lg p-1" role="group" aria-label="Affichage du planning">
+                        {[['semaine', 'Semaine'], ['annee', 'Année']].map(([id, label]) => (
+                          <button key={id} onClick={() => setPlanningView(id)} aria-pressed={planningView === id}
+                            className={`px-5 py-1.5 rounded-md text-sm font-medium transition ${planningView === id ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                            {label}
+                          </button>
+                        ))}
+                      </div>
                       {/* Commentaire de l'archer pour cette semaine */}
                       {archerComment && (
                         <div className="mb-4 flex gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
@@ -526,6 +656,7 @@ export default function CoachDashboard() {
                         onUpdate={() => api.get('/training-types').then(r => setTrainingTypes(r.data))}
                         onLibDragStart={type => setLibDrag(type)}
                         onLibDragEnd={() => setLibDrag(null)}
+                        weekEvents={weekEvents}
                       />
                     </div>
                   </div>
@@ -592,6 +723,23 @@ export default function CoachDashboard() {
           onSave={handleEditTraining}
           onDelete={id => { handleDeleteTraining(id); setEditModal(null); }}
           onClose={() => setEditModal(null)}
+        />
+      )}
+      {eventModal && selectedArcher && (
+        <SeasonEventModal
+          event={eventModal.event}
+          archerName={selectedArcher.name}
+          defaultDate={weekStart}
+          onSave={saveEvent}
+          onDelete={deleteEvent}
+          onClose={() => setEventModal(null)}
+        />
+      )}
+      {importOpen && selectedArcher && (
+        <SeasonImportModal
+          archerName={selectedArcher.name}
+          onImport={importEvents}
+          onClose={() => setImportOpen(false)}
         />
       )}
       {needsPrompt && (

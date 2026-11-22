@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { textOn, formatRange, KIND_LABEL } from '../../utils/season.js';
 
 // Ajout d'une séance au doigt, sur téléphone (remplace le glisser-déposer).
 // Même style que les fenêtres de la version ordinateur.
@@ -22,13 +23,14 @@ function formatDuration(minutes) {
   return m ? `${h}h${String(m).padStart(2, '0')}` : `${h}h`;
 }
 
-export default function MobileAddSheet({ defaultDay, trainingTypes, onConfirm, onClose }) {
+export default function MobileAddSheet({ defaultDay, trainingTypes, weekEvents = [], onConfirm, onClose }) {
   const [search, setSearch] = useState('');
   const [form, setForm] = useState({
     day_of_week: defaultDay || 1,
     start_time: '09:00',
     end_time: '11:00',
     training_type_id: '',
+    season_event_id: '',
     notes: '',
   });
 
@@ -43,8 +45,13 @@ export default function MobileAddSheet({ defaultDay, trainingTypes, onConfirm, o
     setForm(f => ({
       ...f,
       training_type_id: type.id,
+      season_event_id: '',
       end_time: addMinutes(f.start_time, type.duration_minutes || 120),
     }));
+  }
+
+  function pickEvent(ev) {
+    setForm(f => ({ ...f, training_type_id: '', season_event_id: ev.id, end_time: addMinutes(f.start_time, 120) }));
   }
 
   function changeStart(value) {
@@ -69,6 +76,22 @@ export default function MobileAddSheet({ defaultDay, trainingTypes, onConfirm, o
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+          {weekEvents.length > 0 && (
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-2.5 flex flex-col gap-1.5">
+              <p className="text-[10px] font-bold text-blue-700 uppercase tracking-widest">Cette semaine</p>
+              {weekEvents.map(ev => {
+                const selected = form.season_event_id === ev.id;
+                return (
+                  <button key={ev.id} type="button" onClick={() => pickEvent(ev)}
+                    className={`w-full rounded-lg px-3 min-h-[44px] flex items-center justify-between gap-2 shadow-sm ${selected ? 'ring-2 ring-offset-2 ring-blue-700' : ''}`}
+                    style={{ backgroundColor: ev.color, color: textOn(ev.color) }}>
+                    <span className="text-sm font-bold truncate">{selected ? '✓ ' : ''}{ev.title}</span>
+                    <span className="text-xs font-medium shrink-0">{KIND_LABEL[ev.kind]} · {formatRange(ev)}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
           <div>
             <input
               type="search"
@@ -149,8 +172,11 @@ export default function MobileAddSheet({ defaultDay, trainingTypes, onConfirm, o
             Annuler
           </button>
           <button
-            onClick={() => onConfirm(form)}
-            disabled={!form.training_type_id || form.end_time <= form.start_time}
+            onClick={() => {
+              const { season_event_id, ...rest } = form;
+              onConfirm(season_event_id ? { ...rest, training_type_id: null, season_event_id } : rest);
+            }}
+            disabled={(!form.training_type_id && !form.season_event_id) || form.end_time <= form.start_time}
             className="flex-1 py-3 text-sm font-semibold text-white bg-blue-700 hover:bg-blue-800 rounded-lg disabled:opacity-50"
           >
             Ajouter

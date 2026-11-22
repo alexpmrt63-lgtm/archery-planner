@@ -13,6 +13,12 @@ import { usePushSubscription } from '../../hooks/usePushSubscription.js';
 import NotificationBanner from '../shared/NotificationBanner.jsx';
 import MobileDayView from '../shared/MobileDayView.jsx';
 import { useIsMobile } from '../../hooks/useIsMobile.js';
+import SeasonYearView from '../shared/SeasonYearView.jsx';
+
+const DESKTOP_VIEW_KEY = 'desktop-planning-view';
+function readDesktopView() {
+  try { return localStorage.getItem(DESKTOP_VIEW_KEY) === 'annee' ? 'annee' : 'semaine'; } catch { return 'semaine'; }
+}
 
 const REFRESH_INTERVAL = 30_000;
 
@@ -28,6 +34,10 @@ export default function ArcherDashboard() {
   const [weekStart, setWeekStart]             = useState(currentMonday());
   const [uploadWeekStart, setUploadWeekStart] = useState(currentMonday());
   const [coursSlots, setCoursSlots]           = useState([]);
+  const [seasonEvents, setSeasonEvents]       = useState([]);
+  const [seasonError, setSeasonError]         = useState('');
+  const [planningView, setPlanningViewState]  = useState(readDesktopView);
+  const setPlanningView = v => { setPlanningViewState(v); try { localStorage.setItem(DESKTOP_VIEW_KEY, v); } catch { /* stockage indisponible */ } };
   const [trainingSessions, setTrainingSessions] = useState([]);
   const [uploading, setUploading]             = useState(false);
   const [uploadMsg, setUploadMsg]             = useState('');
@@ -71,6 +81,13 @@ export default function ArcherDashboard() {
   }, [user.id, weekStart]);
 
   useEffect(() => { loadData(false); }, [loadData]);
+
+  // Compétitions et stages de la saison (vue « Année »)
+  useEffect(() => {
+    api.get(`/season/${user.id}`)
+      .then(r => { setSeasonEvents(r.data); setSeasonError(''); })
+      .catch(() => setSeasonError("Le calendrier de la saison n'est pas encore disponible."));
+  }, [user.id]);
 
   useEffect(() => {
     intervalRef.current = setInterval(() => loadData(true), REFRESH_INTERVAL);
@@ -300,8 +317,17 @@ export default function ArcherDashboard() {
                 trainingSessions={trainingSessions}
                 onViewSession={session => setViewSession(session)}
                 onResizeSlot={handleResizeSlot}
+                seasonEvents={seasonError ? [] : seasonEvents}
+                seasonError={seasonError}
               />
+            ) : planningView === 'annee' ? (
+              <>
+                <PlanningViewToggle view={planningView} onChange={setPlanningView} />
+                <SeasonYearView events={seasonEvents} error={seasonError} />
+              </>
             ) : (
+            <>
+            <PlanningViewToggle view={planningView} onChange={setPlanningView} />
             <WeeklyPlanner
               weekStart={weekStart}
               coursSlots={coursSlots}
@@ -311,6 +337,7 @@ export default function ArcherDashboard() {
               onResizeSlot={handleResizeSlot}
               dayColWidth={96}
             />
+            </>
             )}
 
             {/* Légende */}
@@ -564,6 +591,20 @@ export default function ArcherDashboard() {
       {needsPrompt && (
         <NotificationBanner onEnable={enableNotifications} onDismiss={dismissBanner} />
       )}
+    </div>
+  );
+}
+
+// Ordinateur : bascule Semaine / Année au-dessus du planning
+function PlanningViewToggle({ view, onChange }) {
+  return (
+    <div className="mb-3 inline-flex bg-gray-100 rounded-lg p-1" role="group" aria-label="Affichage du planning">
+      {[['semaine', 'Semaine'], ['annee', 'Année']].map(([id, label]) => (
+        <button key={id} onClick={() => onChange(id)} aria-pressed={view === id}
+          className={`px-5 py-1.5 rounded-md text-sm font-medium transition ${view === id ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+          {label}
+        </button>
+      ))}
     </div>
   );
 }

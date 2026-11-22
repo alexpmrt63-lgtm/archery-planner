@@ -5,6 +5,26 @@ import { sendPushToUser, sendPushToAllCoaches } from '../utils/webpush.js';
 
 const router = Router();
 
+// Séances : le type d'entraînement, ou l'évènement de la saison quand la séance
+// vient de la proposition « Cette semaine » de la banque.
+const SELECT_FULL = '*, training_type:training_type_id(title, color), season_event:season_event_id(title, color)';
+const SELECT_BASIC = '*, training_type:training_type_id(title, color)';
+
+function withEvent(s) {
+  if (!s || s.training_type || !s.season_event) return s;
+  return { ...s, training_type: s.season_event };
+}
+
+// Tant que la migration « vue Année » n'est pas lancée, la colonne season_event_id
+// n'existe pas : on retombe sur l'ancienne requête pour ne rien casser.
+async function runSelect(run) {
+  const full = await run(SELECT_FULL);
+  if (!full.error || !/season_event/.test(full.error.message || '')) {
+    return { ...full, data: Array.isArray(full.data) ? full.data.map(withEvent) : withEvent(full.data) };
+  }
+  return run(SELECT_BASIC);
+}
+
 // Récupère les entraînements d'un archer pour une semaine
 router.get('/:archerId/:weekStart', requireAuth, async (req, res) => {
   const { archerId, weekStart } = req.params;
@@ -13,13 +33,13 @@ router.get('/:archerId/:weekStart', requireAuth, async (req, res) => {
     return res.status(403).json({ error: 'Accès refusé' });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await runSelect(sel => supabase
     .from('training_sessions')
-    .select('*, training_type:training_type_id(title, color)')
+    .select(sel)
     .eq('archer_id', archerId)
     .eq('week_start', weekStart)
     .order('day_of_week')
-    .order('start_time');
+    .order('start_time'));
 
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
@@ -27,7 +47,7 @@ router.get('/:archerId/:weekStart', requireAuth, async (req, res) => {
 
 // Coach: ajoute un entraînement
 router.post('/', requireAuth, requireCoach, async (req, res) => {
-  const { archer_id, week_start, day_of_week, start_time, end_time, training_type_id, notes } = req.body;
+  const { archer_id, week_start, day_of_week, start_time, end_time, training_type_id, notes, season_event_id } = req.body;
 
   // Vérifie si c'est la première séance de cette semaine pour cet archer
   const { count } = await supabase
@@ -37,11 +57,13 @@ router.post('/', requireAuth, requireCoach, async (req, res) => {
     .eq('week_start', week_start);
   const isFirstSession = count === 0;
 
-  const { data, error } = await supabase
+  const row = { archer_id, week_start, day_of_week, start_time, end_time, training_type_id, notes, coach_id: req.user.id };
+  if (season_event_id) row.season_event_id = season_event_id;
+  const { data, error } = await runSelect(sel => supabase
     .from('training_sessions')
-    .insert({ archer_id, week_start, day_of_week, start_time, end_time, training_type_id, notes, coach_id: req.user.id })
-    .select('*, training_type:training_type_id(title, color)')
-    .single();
+    .insert(row)
+    .select(sel)
+    .single());
 
   if (error) return res.status(500).json({ error: error.message });
 
@@ -55,12 +77,12 @@ router.put('/:sessionId', requireAuth, requireCoach, async (req, res) => {
   const { sessionId } = req.params;
   const { day_of_week, start_time, end_time, training_type_id, notes } = req.body;
 
-  const { data, error } = await supabase
+  const { data, error } = await runSelect(sel => supabase
     .from('training_sessions')
     .update({ day_of_week, start_time, end_time, training_type_id, notes })
     .eq('id', sessionId)
-    .select('*, training_type:training_type_id(title, color)')
-    .single();
+    .select(sel)
+    .single());
 
   if (error) return res.status(500).json({ error: error.message });
 
@@ -80,7 +102,7 @@ router.post('/copy', requireAuth, requireCoach, async (req, res) => {
   // Sessions source (sans les IDs — on en crée de nouvelles)
   const { data: source, error: srcErr } = await supabase
     .from('training_sessions')
-    .select('day_of_week, start_time, end_time, training_type_id, notes')
+    .select('*')
     .eq('archer_id', source_archer_id)
     .eq('week_start', week_start);
 
@@ -105,6 +127,7 @@ router.post('/copy', requireAuth, requireCoach, async (req, res) => {
       training_type_id: s.training_type_id,
       notes:            s.notes,
       coach_id:         req.user.id,
+      ...(s.season_event_id && { season_event_id: s.season_event_id }),
     }));
 
     const { error: insErr } = await supabase.from('training_sessions').insert(rows);
@@ -138,12 +161,12 @@ router.patch('/:sessionId', requireAuth, async (req, res) => {
       return res.status(403).json({ error: 'Accès refusé' });
     }
     const { archer_notes } = req.body;
-    const { data, error } = await supabase
+    const { data, error } = await runSelect(sel => supabase
       .from('training_sessions')
       .update({ archer_notes })
       .eq('id', sessionId)
-      .select('*, training_type:training_type_id(title, color)')
-      .single();
+      .select(sel)
+      .single());
     if (error) return res.status(500).json({ error: error.message });
 
     // Notifie tous les coachs qu'un archer a commenté une séance
@@ -165,12 +188,12 @@ router.patch('/:sessionId', requireAuth, async (req, res) => {
   if (req.body.notes     !== undefined) updates.notes     = req.body.notes;
   if (req.body.completed !== undefined) updates.completed = req.body.completed;
 
-  const { data, error } = await supabase
+  const { data, error } = await runSelect(sel => supabase
     .from('training_sessions')
     .update(updates)
     .eq('id', sessionId)
-    .select('*, training_type:training_type_id(title, color)')
-    .single();
+    .select(sel)
+    .single());
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
