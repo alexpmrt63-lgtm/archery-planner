@@ -30,7 +30,7 @@ function pxToTime(px) {
 }
 
 // ── Bloc cours scolaire ───────────────────────────────────────────────────────
-function SlotBlock({ slot, isTraining, onDelete, readOnly, onResizeStart }) {
+function SlotBlock({ slot, isTraining, onDelete, readOnly, onResizeStart, selected, onSelect }) {
   const blockRef = useRef(null);
   const top     = minutesToPx(timeToMinutes(slot.start_time));
   const height  = Math.max(minutesToPx(timeToMinutes(slot.end_time)) - top, 20);
@@ -50,7 +50,7 @@ function SlotBlock({ slot, isTraining, onDelete, readOnly, onResizeStart }) {
   return (
     <div
       ref={blockRef}
-      className={`absolute left-0.5 right-0.5 rounded select-none z-10 group ${resizable ? 'overflow-visible' : 'overflow-hidden'} ${
+      className={`absolute left-0.5 right-0.5 rounded select-none group ${resizable ? 'overflow-visible cursor-pointer' : 'overflow-hidden'} ${selected ? 'z-30 ring-2 ring-blue-500' : 'z-10'} ${
         isTraining
           ? 'text-white shadow-sm'
           : isPerso
@@ -58,7 +58,7 @@ function SlotBlock({ slot, isTraining, onDelete, readOnly, onResizeStart }) {
             : 'bg-gray-200 border border-gray-300 text-gray-600'
       }`}
       style={{ top: `${top}px`, height: `${height}px`, ...(color ? { backgroundColor: color } : {}) }}
-      onClick={e => e.stopPropagation()}
+      onClick={e => { e.stopPropagation(); if (resizable) onSelect?.(selected ? null : slot.id); }}
     >
       <div className="flex flex-col h-full px-1 py-0.5 gap-px overflow-hidden">
         <span className="text-[10px] leading-tight font-medium truncate">{label}</span>
@@ -75,13 +75,13 @@ function SlotBlock({ slot, isTraining, onDelete, readOnly, onResizeStart }) {
         )}
       </div>
 
-      {resizable && ['top', 'bottom'].map(edge => (
+      {resizable && selected && ['top', 'bottom'].map(edge => (
         <div
           key={edge}
           role="presentation"
           title={edge === 'top' ? "Étirer pour changer l'heure de début" : "Étirer pour changer l'heure de fin"}
           className="absolute left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-white border-2 border-gray-400 shadow-md
-                     opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity cursor-ns-resize z-30
+                     cursor-ns-resize z-30
                      flex items-center justify-center"
           style={{ [edge]: '-9px', touchAction: 'none' }}
           onPointerDown={e => startSlotResize(edge, e)}
@@ -234,6 +234,7 @@ export default function WeeklyPlanner({
   const [resizeGhost, setResizeGhost] = useState(null); // ghost redimensionnement
   // { sessionId, day, startTime, endTime }
 
+  const [selectedSlotId, setSelectedSlotId] = useState(null); // cours sélectionné (poignées visibles)
   const resizingRef       = useRef(null);
   // { session, edge:'top'|'bottom', columnTop, currentStart, currentEnd }
   const resizeJustEndedRef = useRef(false); // bloque le clic colonne après un resize
@@ -332,6 +333,7 @@ export default function WeeklyPlanner({
 
   // ── Clic pour ajouter ────────────────────────────────────────────────────
   function handleColumnClick(e, dayIndex) {
+    setSelectedSlotId(null); // un clic ailleurs masque les poignées
     if (readOnly || !onAddTraining || libDrag || resizingRef.current || resizeJustEndedRef.current) return;
     const rect      = e.currentTarget.getBoundingClientRect();
     const startTime = pxToTime(e.clientY - rect.top);
@@ -465,6 +467,8 @@ export default function WeeklyPlanner({
                   isTraining={false}
                   readOnly={readOnly}
                   onResizeStart={onResizeSlot ? handleSlotResizeStart : undefined}
+                  selected={selectedSlotId === slot.id}
+                  onSelect={setSelectedSlotId}
                 />
               ))}
 
