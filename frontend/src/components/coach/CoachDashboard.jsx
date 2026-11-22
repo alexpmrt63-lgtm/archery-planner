@@ -432,7 +432,7 @@ export default function CoachDashboard() {
                             <p className="text-xs font-semibold text-amber-700 mb-0.5">
                               Message de {selectedArcher.name}
                             </p>
-                            <p className="text-sm text-amber-800">{archerComment}</p>
+                            <p className="text-sm text-amber-800 whitespace-pre-line">{archerComment}</p>
                           </div>
                         </div>
                       )}
