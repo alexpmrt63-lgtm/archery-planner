@@ -61,7 +61,7 @@ router.post('/upload', requireAuth, upload.single('image'), async (req, res) => 
     { "day": 1, "start": "08:00", "end": "09:00", "label": "Mathématiques" }
   ]
 }
-Les jours: 1=Lundi, 2=Mardi, 3=Mercredi, 4=Jeudi, 5=Vendredi, 6=Samedi.
+Les jours: 1=Lundi, 2=Mardi, 3=Mercredi, 4=Jeudi, 5=Vendredi, 6=Samedi, 7=Dimanche.
 Heures au format HH:MM. Si tu ne vois pas d'emploi du temps clair, renvoie {"slots": []}.`
           }
         ]
@@ -199,13 +199,41 @@ router.get('/:archerId/:weekStart', requireAuth, async (req, res) => {
 });
 
 // Mise à jour manuelle d'un créneau
+// Un archer ne peut modifier ou supprimer que ses propres créneaux
+async function canEditSlot(req, slotId) {
+  if (req.user.role === 'coach') return true;
+  const { data } = await supabase
+    .from('schedule_slots')
+    .select('archer_id')
+    .eq('id', slotId)
+    .maybeSingle();
+  return data?.archer_id === req.user.id;
+}
+
 router.put('/:slotId', requireAuth, async (req, res) => {
   const { slotId } = req.params;
   const { label, start_time, end_time, day_of_week } = req.body;
 
+  if (!(await canEditSlot(req, slotId))) {
+    return res.status(403).json({ error: 'Accès refusé' });
+  }
+  if (start_time && end_time && end_time <= start_time) {
+    return res.status(400).json({ error: "L'heure de fin doit être après l'heure de début" });
+  }
+  if (day_of_week !== undefined && !(Number(day_of_week) >= 1 && Number(day_of_week) <= 7)) {
+    return res.status(400).json({ error: 'Jour invalide' });
+  }
+
+  // Ne met à jour que les champs envoyés (étirer un cours ne touche pas au libellé)
+  const updates = {};
+  if (label !== undefined)       updates.label = label;
+  if (start_time !== undefined)  updates.start_time = start_time;
+  if (end_time !== undefined)    updates.end_time = end_time;
+  if (day_of_week !== undefined) updates.day_of_week = Number(day_of_week);
+
   const { data, error } = await supabase
     .from('schedule_slots')
-    .update({ label, start_time, end_time, day_of_week })
+    .update(updates)
     .eq('id', slotId)
     .select()
     .single();
@@ -217,6 +245,9 @@ router.put('/:slotId', requireAuth, async (req, res) => {
 // Supprime un créneau
 router.delete('/:slotId', requireAuth, async (req, res) => {
   const { slotId } = req.params;
+  if (!(await canEditSlot(req, slotId))) {
+    return res.status(403).json({ error: 'Accès refusé' });
+  }
   const { error } = await supabase.from('schedule_slots').delete().eq('id', slotId);
   if (error) return res.status(500).json({ error: error.message });
   res.json({ ok: true });

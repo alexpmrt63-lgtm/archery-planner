@@ -162,6 +162,19 @@ export default function ArcherDashboard() {
     }
   }
 
+  // L'archer étire un cours / créneau perso pour ajuster l'horaire
+  async function handleResizeSlot(slotId, updates) {
+    const backup = coursSlots.find(sl => sl.id === slotId);
+    setCoursSlots(prev => prev.map(sl => sl.id === slotId ? { ...sl, ...updates } : sl));
+    try {
+      const { data } = await api.put(`/schedule/${slotId}`, updates);
+      setCoursSlots(prev => prev.map(sl => sl.id === slotId ? data : sl));
+    } catch (err) {
+      setCoursSlots(prev => prev.map(sl => sl.id === slotId ? backup : sl));
+      alert('Erreur : ' + (err.response?.data?.error || err.message));
+    }
+  }
+
   async function handleDeleteManualSlot(slotId) {
     try {
       await api.delete(`/schedule/${slotId}`);
@@ -286,6 +299,7 @@ export default function ArcherDashboard() {
                 coursSlots={coursSlots}
                 trainingSessions={trainingSessions}
                 onViewSession={session => setViewSession(session)}
+                onResizeSlot={handleResizeSlot}
               />
             ) : (
             <WeeklyPlanner
@@ -294,6 +308,7 @@ export default function ArcherDashboard() {
               trainingSessions={trainingSessions}
               readOnly={true}
               onViewSession={session => setViewSession(session)}
+              onResizeSlot={handleResizeSlot}
               dayColWidth={96}
             />
             )}
