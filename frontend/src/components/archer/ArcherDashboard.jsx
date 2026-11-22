@@ -102,7 +102,7 @@ export default function ArcherDashboard() {
     setCommentMsg('');
     try {
       await api.post('/comments', { week_start: uploadWeekStart, comment: comment.trim() });
-      setCommentMsg('✓ Message envoyé au coach !');
+      setCommentMsg('✓ Message envoyé au coach ! Tu le retrouves aussi dans l\'onglet Messages.');
       setComment('');
     } catch (err) {
       setCommentMsg('Erreur : ' + (err.response?.data?.error || err.message));

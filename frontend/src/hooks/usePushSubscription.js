@@ -30,8 +30,9 @@ export function usePushSubscription() {
     if (perm === 'granted') {
       doSubscribe().catch(err => console.warn('[Push] Abonnement échoué :', err.message));
     } else if (perm === 'default') {
-      const dismissed = localStorage.getItem('push-banner-dismissed');
-      if (!dismissed) setNeedsPrompt(true);
+      // « Plus tard » masque la bannière 7 jours, puis elle revient
+      const dismissedAt = Number(localStorage.getItem('push-banner-dismissed-at') || 0);
+      if (Date.now() - dismissedAt > 7 * 24 * 60 * 60 * 1000) setNeedsPrompt(true);
     }
   }, []);
 
@@ -49,7 +50,7 @@ export function usePushSubscription() {
 
   function dismissBanner() {
     setNeedsPrompt(false);
-    localStorage.setItem('push-banner-dismissed', '1');
+    localStorage.setItem('push-banner-dismissed-at', String(Date.now()));
   }
 
   return { needsPrompt, enableNotifications, dismissBanner };

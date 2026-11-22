@@ -1,7 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import api from '../../api/client.js';
+
+const REFRESH_INTERVAL = 15000; // 15 s
 
 export default function ArcherMessages({ archer, coachName }) {
   const [messages, setMessages]   = useState([]);
@@ -10,14 +12,39 @@ export default function ArcherMessages({ archer, coachName }) {
   const [loading, setLoading]     = useState(false);
   const bottomRef = useRef(null);
 
+  // Numéro de la dernière requête : une réponse plus ancienne (lente, ou d'un autre
+  // archer) est ignorée, sinon elle écraserait un message qu'on vient d'envoyer.
+  const requestIdRef = useRef(0);
+  const archerId = archer?.id;
+
+  const loadMessages = useCallback(async (silent = false) => {
+    if (!archerId) return;
+    const requestId = ++requestIdRef.current;
+    if (!silent) setLoading(true);
+    try {
+      const r = await api.get(`/messages/${archerId}`);
+      if (requestId === requestIdRef.current) setMessages(r.data);
+    } catch {
+      if (!silent && requestId === requestIdRef.current) setMessages([]);
+    } finally {
+      if (!silent && requestId === requestIdRef.current) setLoading(false);
+    }
+  }, [archerId]);
+
+  // Chargement initial + rafraîchissement régulier pour voir les réponses
   useEffect(() => {
-    if (!archer) return;
-    setLoading(true);
-    api.get(`/messages/${archer.id}`)
-      .then(r => setMessages(r.data))
-      .catch(() => setMessages([]))
-      .finally(() => setLoading(false));
-  }, [archer]);
+    setMessages([]);
+    loadMessages(false);
+    const timer = setInterval(() => loadMessages(true), REFRESH_INTERVAL);
+    function onVisible() {
+      if (document.visibilityState === 'visible') loadMessages(true);
+    }
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [loadMessages]);
 
   // Scroll auto vers le bas quand nouveaux messages
   useEffect(() => {
@@ -28,12 +55,13 @@ export default function ArcherMessages({ archer, coachName }) {
     e.preventDefault();
     if (!content.trim()) return;
     setSending(true);
+    requestIdRef.current++; // invalide un chargement encore en cours
     try {
       const { data } = await api.post('/messages', {
         archer_id: archer.id,
         content: content.trim(),
       });
-      setMessages(prev => [...prev, data]);
+      setMessages(prev => (prev.some(m => m.id === data.id) ? prev : [...prev, data]));
       setContent('');
     } catch (err) {
       alert('Erreur : ' + (err.response?.data?.error || err.message));
