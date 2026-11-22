@@ -26,8 +26,10 @@ export default function CoachMobile({
   activeTab, setActiveTab,
   loading, archerComment,
   onAddTraining, onViewSession, onShare,
+  seasonEvents, seasonError, weekEvents = [], onAddEvent, onEditEvent,
 }) {
   const [day, setDay] = useState(null);
+  const [planningView, setPlanningView] = useState('jour');
   const [addOpen, setAddOpen] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
 
@@ -192,6 +194,10 @@ export default function CoachMobile({
             trainingSessions={trainingSessions}
             onViewSession={onViewSession}
             onDayChange={setDay}
+            seasonEvents={seasonEvents}
+            seasonError={seasonError}
+            onSeasonEventClick={onEditEvent}
+            onViewChange={setPlanningView}
           />
         </div>
       )}
@@ -204,14 +210,14 @@ export default function CoachMobile({
         <ArcherMessages archer={selectedArcher} />
       </div>
 
-      {activeTab === 'planning' && (
+      {activeTab === 'planning' && !(planningView === 'annee' && seasonError) && (
         <button
-          onClick={() => setAddOpen(true)}
+          onClick={() => (planningView === 'annee' ? onAddEvent?.() : setAddOpen(true))}
           className="fixed right-4 z-40 flex items-center gap-2 px-5 h-14 rounded-full bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold shadow-lg"
           style={{ bottom: 'max(20px, calc(env(safe-area-inset-bottom) + 12px))' }}
         >
           <span className="text-xl leading-none">+</span>
-          Ajouter
+          {planningView === 'annee' ? 'Évènement' : 'Ajouter'}
         </button>
       )}
 
@@ -219,6 +225,7 @@ export default function CoachMobile({
         <MobileAddSheet
           defaultDay={day}
           trainingTypes={trainingTypes}
+          weekEvents={weekEvents}
           onConfirm={form => { onAddTraining(form); setAddOpen(false); }}
           onClose={() => setAddOpen(false)}
         />

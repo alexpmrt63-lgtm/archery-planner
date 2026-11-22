@@ -2,10 +2,14 @@ import { useState, useEffect } from 'react';
 import { format, addDays, parseISO, isSameDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import WeeklyPlanner from './WeeklyPlanner.jsx';
+import SeasonList from './SeasonList.jsx';
 
 const VIEW_KEY = 'mobile-planning-view';
 function readView() {
-  try { return localStorage.getItem(VIEW_KEY) === 'semaine' ? 'semaine' : 'jour'; } catch { return 'jour'; }
+  try {
+    const v = localStorage.getItem(VIEW_KEY);
+    return v === 'semaine' || v === 'annee' ? v : 'jour';
+  } catch { return 'jour'; }
 }
 
 // Vue « jour » du planning, utilisée uniquement sur téléphone.
@@ -42,9 +46,16 @@ export default function MobileDayView({
   onResizeSlot,
   day: controlledDay,
   onDayChange,
+  seasonEvents,          // évènements de la saison : active le bouton « Année »
+  seasonError,
+  onSeasonEventClick,
+  onViewChange,
 }) {
-  const [view, setViewState] = useState(readView);
+  const hasSeason = Array.isArray(seasonEvents);
+  const [storedView, setViewState] = useState(readView);
+  const view = storedView === 'annee' && !hasSeason ? 'jour' : storedView;
   const setView = v => { setViewState(v); try { localStorage.setItem(VIEW_KEY, v); } catch { /* stockage indisponible */ } };
+  useEffect(() => { onViewChange?.(view); }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
   const [editingSlot, setEditingSlot] = useState(null);
   const [ownDay, setOwnDay] = useState(() => todayIndexIn(weekStart));
   const day = controlledDay ?? ownDay;
@@ -66,12 +77,12 @@ export default function MobileDayView({
 
   const toggle = (
     <div className="flex bg-gray-100 rounded-lg p-1 self-center" role="group" aria-label="Affichage du planning">
-      {[['jour', 'Jour'], ['semaine', 'Semaine']].map(([id, label]) => (
+      {[['jour', 'Jour'], ['semaine', 'Semaine'], ...(hasSeason ? [['annee', 'Année']] : [])].map(([id, label]) => (
         <button
           key={id}
           onClick={() => setView(id)}
           aria-pressed={view === id}
-          className={`px-5 py-2 rounded-md text-sm font-medium transition ${
+          className={`${hasSeason ? 'px-4' : 'px-5'} py-2 rounded-md text-sm font-medium transition ${
             view === id ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-500'
           }`}
         >
@@ -80,6 +91,15 @@ export default function MobileDayView({
       ))}
     </div>
   );
+
+  if (view === 'annee') {
+    return (
+      <div className="flex flex-col gap-3">
+        {toggle}
+        <SeasonList events={seasonEvents} onEventClick={onSeasonEventClick} error={seasonError} />
+      </div>
+    );
+  }
 
   if (view === 'semaine') {
     return (

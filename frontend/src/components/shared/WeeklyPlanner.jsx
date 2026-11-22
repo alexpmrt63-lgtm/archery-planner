@@ -372,12 +372,12 @@ export default function WeeklyPlanner({
 
     const rawLib = e.dataTransfer.getData('application/x-library');
     if (rawLib) {
-      const { training_type_id, duration_minutes } = JSON.parse(rawLib);
+      const { training_type_id, season_event_id, duration_minutes } = JSON.parse(rawLib);
       const rect      = e.currentTarget.getBoundingClientRect();
       const startTime = pxToTime(e.clientY - rect.top);
       const startMin  = timeToMinutes(startTime);
       const endTime   = minutesToTime(startMin + duration_minutes);
-      onDropFromLibrary?.({ day: dayIndex + 1, startTime, endTime, training_type_id });
+      onDropFromLibrary?.({ day: dayIndex + 1, startTime, endTime, training_type_id, season_event_id });
       setLibGhost(null);
       return;
     }

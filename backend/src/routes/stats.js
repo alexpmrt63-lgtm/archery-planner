@@ -15,16 +15,22 @@ router.get('/:archerId', requireAuth, requireCoach, async (req, res) => {
   const { archerId } = req.params;
   const { from, to } = req.query;
 
-  let query = supabase
-    .from('training_sessions')
-    .select('*, training_type:training_type_id(title, color)')
-    .eq('archer_id', archerId)
-    .order('week_start');
+  const build = sel => {
+    let query = supabase
+      .from('training_sessions')
+      .select(sel)
+      .eq('archer_id', archerId)
+      .order('week_start');
+    if (from) query = query.gte('week_start', from);
+    if (to)   query = query.lte('week_start', to);
+    return query;
+  };
 
-  if (from) query = query.gte('week_start', from);
-  if (to)   query = query.lte('week_start', to);
-
-  const { data, error } = await query;
+  // Séances venant d'un évènement de la saison : titre et couleur de l'évènement.
+  // Sans la migration « vue Année », on garde l'ancienne requête.
+  let { data, error } = await build('*, training_type:training_type_id(title, color), season_event:season_event_id(title, color)');
+  if (error && /season_event/.test(error.message || '')) ({ data, error } = await build('*, training_type:training_type_id(title, color)'));
+  if (data) data = data.map(r => (!r.training_type && r.season_event) ? { ...r, training_type: r.season_event } : r);
   if (error) return res.status(500).json({ error: error.message });
 
   // ── Totaux ──────────────────────────────────────────────────
@@ -34,7 +40,7 @@ router.get('/:archerId', requireAuth, requireCoach, async (req, res) => {
   // ── Par type ────────────────────────────────────────────────
   const typeMap = {};
   data.forEach(r => {
-    const key = r.training_type_id;
+    const key = r.training_type_id || (r.season_event_id ? `event_${r.season_event_id}` : null);
     if (!typeMap[key]) {
       typeMap[key] = {
         training_type_id: key,
