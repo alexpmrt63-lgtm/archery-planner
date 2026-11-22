@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
 import { format, addDays, parseISO, isSameDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import WeeklyPlanner from './WeeklyPlanner.jsx';
+
+const VIEW_KEY = 'mobile-planning-view';
+function readView() {
+  try { return localStorage.getItem(VIEW_KEY) === 'semaine' ? 'semaine' : 'jour'; } catch { return 'jour'; }
+}
 
 // Vue « jour » du planning, utilisée uniquement sur téléphone.
 // Mêmes couleurs que la grille ordinateur : blocs d'entraînement colorés,
@@ -36,6 +42,8 @@ export default function MobileDayView({
   day: controlledDay,
   onDayChange,
 }) {
+  const [view, setViewState] = useState(readView);
+  const setView = v => { setViewState(v); try { localStorage.setItem(VIEW_KEY, v); } catch { /* stockage indisponible */ } };
   const [ownDay, setOwnDay] = useState(() => todayIndexIn(weekStart));
   const day = controlledDay ?? ownDay;
   const setDay = d => { setOwnDay(d); onDayChange?.(d); };
@@ -54,8 +62,43 @@ export default function MobileDayView({
     ...coursSlots.filter(s => s.day_of_week === day).map(s => ({ kind: s.type === 'perso' ? 'perso' : 'cours', s })),
   ].sort((a, b) => a.s.start_time.localeCompare(b.s.start_time));
 
+  const toggle = (
+    <div className="flex bg-gray-100 rounded-lg p-1 self-center" role="group" aria-label="Affichage du planning">
+      {[['jour', 'Jour'], ['semaine', 'Semaine']].map(([id, label]) => (
+        <button
+          key={id}
+          onClick={() => setView(id)}
+          aria-pressed={view === id}
+          className={`px-5 py-2 rounded-md text-sm font-medium transition ${
+            view === id ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-500'
+          }`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+
+  if (view === 'semaine') {
+    return (
+      <div className="flex flex-col gap-3">
+        {toggle}
+        <WeeklyPlanner
+          weekStart={weekStart}
+          coursSlots={coursSlots}
+          trainingSessions={trainingSessions}
+          readOnly={true}
+          onViewSession={onViewSession}
+          dayColWidth={64}
+        />
+        <p className="text-xs text-gray-400 text-center">Fais glisser la grille sur le côté pour voir toute la semaine.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-3">
+      {toggle}
       {/* Bandeau des 7 jours */}
       <div className="grid grid-cols-7 gap-1">
         {dates.map((date, i) => {
