@@ -106,6 +106,18 @@ export default function CoachDashboard() {
     loadSeason(selectedArcher);
   }
 
+  // Glisser / étirer dans la vue Année : change les dates pour cet archer seulement
+  async function changeEventDates(ev, dates) {
+    const backup = seasonEvents;
+    setSeasonEvents(prev => prev.map(e => (e.id === ev.id ? { ...e, ...dates } : e)));
+    try {
+      await api.put(`/season/${ev.id}`, { ...ev, ...dates, scope: 'one' });
+    } catch {
+      setSeasonEvents(backup);
+      alert("Les nouvelles dates n'ont pas pu être enregistrées. Réessaie.");
+    }
+  }
+
   async function importEvents(events, scope) {
     await api.post('/season/import', {
       events,
@@ -597,6 +609,7 @@ export default function CoachDashboard() {
                       events={seasonEvents}
                       error={seasonError}
                       onEventClick={ev => setEventModal({ event: ev })}
+                      onEventChange={seasonError ? undefined : changeEventDates}
                       actions={!seasonError && (
                         <div className="flex items-center gap-2">
                           <button onClick={() => setImportOpen(true)}
