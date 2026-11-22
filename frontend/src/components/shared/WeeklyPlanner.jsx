@@ -30,16 +30,27 @@ function pxToTime(px) {
 }
 
 // ── Bloc cours scolaire ───────────────────────────────────────────────────────
-function SlotBlock({ slot, isTraining, onDelete, readOnly }) {
+function SlotBlock({ slot, isTraining, onDelete, readOnly, onResizeStart }) {
+  const blockRef = useRef(null);
   const top     = minutesToPx(timeToMinutes(slot.start_time));
   const height  = Math.max(minutesToPx(timeToMinutes(slot.end_time)) - top, 20);
   const color   = isTraining ? (slot.training_type?.color || '#3b82f6') : null;
   const label   = isTraining ? (slot.training_type?.title || 'Entraînement') : (slot.label || 'Cours');
   const isPerso = !isTraining && slot.type === 'perso';
 
+  // L'archer peut étirer ses cours / créneaux perso pour ajuster l'horaire
+  function startSlotResize(edge, e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const columnTop = blockRef.current?.parentElement?.getBoundingClientRect().top ?? 0;
+    onResizeStart?.(slot, edge, columnTop);
+  }
+  const resizable = !isTraining && !!onResizeStart;
+
   return (
     <div
-      className={`absolute left-0.5 right-0.5 rounded overflow-hidden select-none z-10 ${
+      ref={blockRef}
+      className={`absolute left-0.5 right-0.5 rounded select-none z-10 group ${resizable ? 'overflow-visible' : 'overflow-hidden'} ${
         isTraining
           ? 'text-white shadow-sm'
           : isPerso
@@ -63,6 +74,22 @@ function SlotBlock({ slot, isTraining, onDelete, readOnly }) {
           >✕</button>
         )}
       </div>
+
+      {resizable && ['top', 'bottom'].map(edge => (
+        <div
+          key={edge}
+          role="presentation"
+          title={edge === 'top' ? "Étirer pour changer l'heure de début" : "Étirer pour changer l'heure de fin"}
+          className="absolute left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-white border-2 border-gray-400 shadow-md
+                     opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity cursor-ns-resize z-30
+                     flex items-center justify-center"
+          style={{ [edge]: '-9px', touchAction: 'none' }}
+          onPointerDown={e => startSlotResize(edge, e)}
+          onClick={e => e.stopPropagation()}
+        >
+          <div className="w-2 h-0.5 rounded-full bg-gray-500" />
+        </div>
+      ))}
     </div>
   );
 }
@@ -197,6 +224,7 @@ export default function WeeklyPlanner({
   onDropFromLibrary,
   onEditTraining,
   onViewSession,
+  onResizeSlot,
   libDrag          = null,
   dayColWidth      = null,
 }) {
@@ -218,6 +246,7 @@ export default function WeeklyPlanner({
     function onMouseMove(e) {
       const r = resizingRef.current;
       if (!r) return;
+      if (e.cancelable) e.preventDefault();
 
       const y           = e.clientY - r.columnTop;
       const snappedTime = pxToTime(Math.max(0, y));
@@ -236,6 +265,7 @@ export default function WeeklyPlanner({
 
       setResizeGhost({
         sessionId: r.session.id,
+        kind:      r.kind,
         day:       r.session.day_of_week,
         startTime: r.currentStart,
         endTime:   r.currentEnd,
@@ -246,7 +276,8 @@ export default function WeeklyPlanner({
       const r = resizingRef.current;
       if (r) {
         if (r.currentStart !== r.session.start_time || r.currentEnd !== r.session.end_time) {
-          onMoveTraining?.(r.session.id, {
+          const save = r.kind === 'slot' ? onResizeSlot : onMoveTraining;
+          save?.(r.session.id, {
             day_of_week: r.session.day_of_week,
             start_time:  r.currentStart,
             end_time:    r.currentEnd,
@@ -263,16 +294,24 @@ export default function WeeklyPlanner({
       setResizeGhost(null);
     }
 
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup',   onMouseUp);
+    // Événements « pointer » : souris (comme avant) et doigt sur téléphone
+    document.addEventListener('pointermove',   onMouseMove, { passive: false });
+    document.addEventListener('pointerup',     onMouseUp);
+    document.addEventListener('pointercancel', onMouseUp);
     return () => {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup',   onMouseUp);
+      document.removeEventListener('pointermove',   onMouseMove);
+      document.removeEventListener('pointerup',     onMouseUp);
+      document.removeEventListener('pointercancel', onMouseUp);
     };
-  }, [onMoveTraining]);
+  }, [onMoveTraining, onResizeSlot]);
 
-  function handleResizeStart(session, edge, columnTop) {
+  function handleSlotResizeStart(slot, edge, columnTop) {
+    handleResizeStart(slot, edge, columnTop, 'slot');
+  }
+
+  function handleResizeStart(session, edge, columnTop, kind = 'training') {
     resizingRef.current = {
+      kind,
       session,
       edge,
       columnTop,
@@ -284,6 +323,7 @@ export default function WeeklyPlanner({
     document.body.style.userSelect = 'none';
     setResizeGhost({
       sessionId: session.id,
+      kind,
       day:       session.day_of_week,
       startTime: session.start_time,
       endTime:   session.end_time,
@@ -419,7 +459,13 @@ export default function WeeklyPlanner({
 
               {/* Cours scolaires */}
               {dayCours.map(slot => (
-                <SlotBlock key={slot.id} slot={slot} isTraining={false} readOnly={readOnly} />
+                <SlotBlock
+                  key={slot.id}
+                  slot={slot}
+                  isTraining={false}
+                  readOnly={readOnly}
+                  onResizeStart={onResizeSlot ? handleSlotResizeStart : undefined}
+                />
               ))}
 
               {/* Entraînements */}
@@ -466,7 +512,7 @@ export default function WeeklyPlanner({
               {/* Ghost redimensionnement */}
               {showResize && (() => {
                 const session = trainingSessions.find(s => s.id === resizeGhost.sessionId);
-                const color   = session?.training_type?.color || '#3b82f6';
+                const color   = resizeGhost.kind === 'slot' ? '#6b7280' : (session?.training_type?.color || '#3b82f6');
                 const topPx   = minutesToPx(timeToMinutes(resizeGhost.startTime));
                 const botPx   = minutesToPx(timeToMinutes(resizeGhost.endTime));
                 const h       = Math.max(botPx - topPx, 13);

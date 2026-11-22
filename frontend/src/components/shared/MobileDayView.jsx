@@ -39,11 +39,13 @@ export default function MobileDayView({
   coursSlots = [],
   trainingSessions = [],
   onViewSession,
+  onResizeSlot,
   day: controlledDay,
   onDayChange,
 }) {
   const [view, setViewState] = useState(readView);
   const setView = v => { setViewState(v); try { localStorage.setItem(VIEW_KEY, v); } catch { /* stockage indisponible */ } };
+  const [editingSlot, setEditingSlot] = useState(null);
   const [ownDay, setOwnDay] = useState(() => todayIndexIn(weekStart));
   const day = controlledDay ?? ownDay;
   const setDay = d => { setOwnDay(d); onDayChange?.(d); };
@@ -89,6 +91,7 @@ export default function MobileDayView({
           trainingSessions={trainingSessions}
           readOnly={true}
           onViewSession={onViewSession}
+          onResizeSlot={onResizeSlot}
           dayColWidth={64}
         />
         <p className="text-xs text-gray-400 text-center">Fais glisser la grille sur le côté pour voir toute la semaine.</p>
@@ -151,20 +154,82 @@ export default function MobileDayView({
               </button>
             );
           }
+          const editable = !!onResizeSlot;
           return (
-            <div
+            <button
               key={s.id}
-              className={`rounded-lg px-3 py-2 flex flex-col gap-0.5 ${
+              type="button"
+              disabled={!editable}
+              onClick={() => setEditingSlot(s)}
+              className={`w-full text-left rounded-lg px-3 py-2 flex items-center gap-2 ${
                 kind === 'perso'
                   ? 'bg-zinc-200 border border-zinc-400 border-dashed text-zinc-600'
                   : 'bg-gray-200 border border-gray-300 text-gray-600'
               }`}
             >
-              <span className="text-sm font-medium leading-tight">{s.label || (kind === 'perso' ? 'Perso' : 'Cours')}</span>
-              <span className="text-xs opacity-75 font-medium">{time}</span>
-            </div>
+              <span className="flex-1 flex flex-col gap-0.5">
+                <span className="text-sm font-medium leading-tight">{s.label || (kind === 'perso' ? 'Perso' : 'Cours')}</span>
+                <span className="text-xs opacity-75 font-medium">{time}</span>
+              </span>
+              {editable && <span className="text-xs opacity-60">✎ Horaire</span>}
+            </button>
           );
         })}
+      </div>
+
+      {editingSlot && (
+        <SlotTimeModal
+          slot={editingSlot}
+          onClose={() => setEditingSlot(null)}
+          onSave={times => {
+            onResizeSlot(editingSlot.id, { day_of_week: editingSlot.day_of_week, ...times });
+            setEditingSlot(null);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// Ajustement de l'horaire d'un cours au doigt (vue jour sur téléphone)
+function SlotTimeModal({ slot, onClose, onSave }) {
+  const [start, setStart] = useState(slot.start_time.slice(0, 5));
+  const [end, setEnd]     = useState(slot.end_time.slice(0, 5));
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-end z-50" onClick={onClose}>
+      <div
+        role="dialog"
+        aria-label="Ajuster l'horaire"
+        className="bg-white rounded-t-2xl shadow-xl w-full p-5 space-y-4"
+        style={{ paddingBottom: 'max(20px, env(safe-area-inset-bottom))' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div>
+          <h2 className="text-lg font-bold text-gray-900">Ajuster l'horaire</h2>
+          <p className="text-sm text-gray-500">{slot.label || 'Cours'}</p>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Début</label>
+            <input type="time" value={start} onChange={e => setStart(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-base bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Fin</label>
+            <input type="time" value={end} onChange={e => setEnd(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-base bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={onClose} className="flex-1 py-3 text-sm text-gray-600 border border-gray-300 rounded-lg">Annuler</button>
+          <button
+            onClick={() => onSave({ start_time: start, end_time: end })}
+            disabled={!start || !end || end <= start}
+            className="flex-1 py-3 text-sm font-semibold text-white bg-blue-700 hover:bg-blue-800 rounded-lg disabled:opacity-50"
+          >
+            Enregistrer
+          </button>
+        </div>
       </div>
     </div>
   );
